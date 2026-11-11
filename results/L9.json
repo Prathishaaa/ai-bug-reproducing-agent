@@ -1,0 +1,27 @@
+{
+  "bug": "L9",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate.py",
+    "test/test_input.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "seconds": 23,
+  "tries": [
+    {
+      "guess": "When headers='firstrow' and the input data is empty, tabulate treats the string 'firstrow' as an iterable of characters, interpreting it as headers.",
+      "test_code": "import tabulate\nfrom common import assert_equal\n\ndef test_bug():\n    result = tabulate([], headers=\"firstrow\")\n    assert_equal(result, \"\")\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:2: in <module>\n    from common import assert_equal\nE   ModuleNotFoundError: No module named 'common'\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.90s\n",
+      "match": false
+    },
+    {
+      "guess": "When headers='firstrow' and data is empty, tabulate treats the string 'firstrow' as an iterable of characters because it checks headers == 'firstrow' only after assuming headers might be an iterable.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    result = tabulate([], headers=\"firstrow\")\n    assert result == \"\"",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert result == \"\"\nE   AssertionError: assert 'f    i    r ...---  ---  ---' == ''\nE     \nE     + f    i    r    s    t    r    o    w\nE     + ---  ---  ---  ---  ---  ---  ---  ---\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'f    i    r ...---  --...\n1 failed in 0.58s\n",
+      "match": true,
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.39s\n"
+    }
+  ]
+}

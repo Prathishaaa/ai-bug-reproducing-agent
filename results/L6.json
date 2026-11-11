@@ -1,0 +1,19 @@
+{
+  "bug": "L6",
+  "error_to_find": "IndexError",
+  "files_picked": [
+    "more_itertools/more.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "seconds": 18,
+  "tries": [
+    {
+      "guess": "Calling interleave_evenly with empty iterables raises an IndexError because it attempts to access the longest iterable before checking if any iterables were provided.",
+      "test_code": "from more_itertools import interleave_evenly\n\n\ndef test_bug():\n    assert list(interleave_evenly([])) == []\n    assert list(interleave_evenly([], lengths=[])) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert list(interleave_evenly([])) == []\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:1350: in interleave_evenly\n    delta_primary, deltas_secondary = lengths_desc[0], lengths_desc[1:]\n                                      ^^^^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 0.93s\n",
+      "match": true,
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.56s\n"
+    }
+  ]
+}

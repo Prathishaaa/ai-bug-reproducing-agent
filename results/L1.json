@@ -6,13 +6,15 @@
     "src/humanize/__init__.py"
   ],
   "status": "reproduced",
-  "seconds": 31,
+  "verified_with_fix": false,
+  "seconds": 18,
   "tries": [
     {
-      "guess": "Calling int(value) on float('inf') raises OverflowError, which is not caught in the try-except block in naturaldelta().",
-      "test_code": "import humanize\n\n\ndef test_bug():\n    assert humanize.naturaldelta(float(\"inf\")) == str(float(\"inf\"))\n    assert humanize.naturaldelta(float(\"-inf\")) == str(float(\"-inf\"))\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert humanize.naturaldelta(float(\"inf\")) == str(float(\"inf\"))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/humanize/time.py:151: in naturaldelta\n    int(value)  # Explicitly don't support string such as \"NaN\" or \"inf\"\n    ^^^^^^^^^^\nE   OverflowError: cannot convert float infinity to integer\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - OverflowError: cannot convert float infinity t...\n1 failed in 0.41s\n",
-      "match": true
+      "guess": "naturaldelta() raises an uncaught OverflowError when converting float('inf') or float('-inf') to an integer inside an except block that only catches (ValueError, TypeError).",
+      "test_code": "import humanize\n\n\ndef test_bug():\n    assert humanize.naturaldelta(float(\"inf\")) == float(\"inf\")\n    assert humanize.naturaldelta(float(\"-inf\")) == float(\"-inf\")\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert humanize.naturaldelta(float(\"inf\")) == float(\"inf\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/humanize/time.py:151: in naturaldelta\n    int(value)  # Explicitly don't support string such as \"NaN\" or \"inf\"\n    ^^^^^^^^^^\nE   OverflowError: cannot convert float infinity to integer\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - OverflowError: cannot convert float infinity t...\n1 failed in 1.16s\n",
+      "match": true,
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert humanize.naturaldelta(float(\"inf\")) == float(\"inf\")\nE   AssertionError: assert 'inf' == inf\nE    +  where 'inf' = <function naturaldelta at 0x73dea4777560>(inf)\nE    +    where <function naturaldelta at 0x73dea4777560> = humanize.naturaldelta\nE    +    and   inf = float('inf')\nE    +  and   inf = float('inf')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'inf' == inf\n1 failed in 0.98s\n"
     }
   ]
 }
