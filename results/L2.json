@@ -1,0 +1,20 @@
+{
+  "bug": "L2",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/humanize/time.py",
+    "src/humanize/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "seconds": 15,
+  "tries": [
+    {
+      "guess": "naturaldelta does not properly handle negative timedeltas, taking absolute days which causes negative time differences like -1 second to evaluate to a day instead of a moment.",
+      "test_code": "import datetime as dt\nfrom humanize import naturaldelta\n\ndef test_bug():\n    delta = dt.timedelta(seconds=-1)\n    assert naturaldelta(delta) == \"a second\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert naturaldelta(delta) == \"a second\"\nE   AssertionError: assert 'a day' == 'a second'\nE     \nE     - a second\nE     + a day\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'a day' == 'a second'\n1 failed in 0.72s\n",
+      "match": true,
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.44s\n"
+    }
+  ]
+}

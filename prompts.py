@@ -5,7 +5,7 @@ READ_BUG = """You are helping reproduce a bug in a Python project.
 Read the bug report below. Reply with only JSON, nothing else, like this:
 {"error_type": "OverflowError", "keywords": ["word1", "word2"], "file_names": ["file.py"]}
 
-error_type: the Python error the bug causes.
+error_type: the Python error the bug causes. If it gives a wrong result instead, use AssertionError.
 keywords: 2 to 5 function or variable names to search the code for.
 file_names: any .py files the report mentions, or an empty list.
 

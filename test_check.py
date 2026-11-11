@@ -22,6 +22,11 @@ def test_broken_test():
     assert not is_match(read("broken"), "OverflowError")
 
 
+def test_wrong_answer_bug():
+    # Bug D1 gives a wrong number, not a crash. pytest prints "E   assert 100 == 110".
+    assert is_match(read("wrong_answer"), "AssertionError")
+
+
 def test_cheating_test():
     # The test raised OverflowError itself and never used humanize.
     assert not is_match(read("cheating"), "OverflowError")

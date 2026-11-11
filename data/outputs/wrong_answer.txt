@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________________ test_bug ___________________________________
+test_bug.py:23: in test_bug
+    assert p2.per_page == 110
+E   assert 100 == 110
+E    +  where 100 = <flask_sqlalchemy.pagination.QueryPagination object at 0x79f22aede150>.per_page
+=========================== short test summary info ============================
+FAILED test_bug.py::test_bug - assert 100 == 110
+1 failed in 1.75s

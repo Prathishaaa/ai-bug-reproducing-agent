@@ -1,0 +1,21 @@
+{
+  "bug": "D1",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/flask_sqlalchemy/pagination.py",
+    "src/flask_sqlalchemy/query.py",
+    "src/flask_sqlalchemy/extension.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "seconds": 20,
+  "tries": [
+    {
+      "guess": "Pagination.next() and Pagination.prev() do not pass max_per_page when instantiating the new Pagination object, causing it to fall back to the default max_per_page of 100.",
+      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\napp = Flask(__name__)\napp.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\ndb = SQLAlchemy(app)\n\nclass Todo(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n\ndef test_bug():\n    with app.app_context():\n        db.create_all()\n        for _ in range(150):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = Todo.query.paginate(per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 40\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:22: in test_bug\n    assert len(p2.items) == 40\nE   assert 50 == 40\nE    +  where 50 = len([<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...])\nE    +    where [<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...] = <flask_sqlalchemy.pagination.QueryPagination object at 0x796c35a09a90>.items\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 50 == 40\n1 failed in 2.60s\n",
+      "match": true,
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.77s\n"
+    }
+  ]
+}

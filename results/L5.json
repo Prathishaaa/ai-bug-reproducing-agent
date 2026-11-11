@@ -1,0 +1,32 @@
+{
+  "bug": "L5",
+  "error_to_find": "ValueError",
+  "files_picked": [
+    "more_itertools/more.py",
+    "more_itertools/recipes.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "seconds": 29,
+  "tries": [
+    {
+      "guess": "ichunked() calls islice(iterator, n - 1) which raises a ValueError when chunk size n is 0 or negative.",
+      "test_code": "import pytest\nfrom more_itertools import ich\n\ndef test_bug():\n    from more_itertools import ichunked\n    rows = [\"a\", \"b\", \"c\"]\n    # chunk_size = 0 should yield nothing, matching chunked()\n    assert [list(c) for c in ichunked(rows, 0)] == []\n    # negative chunk_size should raise ValueError like chunked()\n    with pytest.raises(ValueError):\n        list(ichunked(rows, -1))\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:2: in <module>\n    from more_itertools import ich\nE   ImportError: cannot import name 'ich' from 'more_itertools' (/app/more_itertools/__init__.py)\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.72s\n",
+      "match": false
+    },
+    {
+      "guess": "ichunked with a chunk size of 0 or negative passes n - 1 to islice, raising a ValueError.",
+      "test_code": "from more_itertools import ichunked\n\ndef test_bug():\n    rows = [\"a\", \"b\", \"c\"]\n    chunks = ichunked(rows, 0)\n    try:\n        [list(c) for c in chunks]\n    except ValueError:\n        pass\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.33s\n",
+      "match": false
+    },
+    {
+      "guess": "ichunked with a chunk size of 0 or negative passes n - 1 to islice, raising a ValueError for nonempty iterables instead of handling it like chunked.",
+      "test_code": "from more_itertools import ichunked\n\ndef test_bug():\n    rows = [\"a\", \"b\", \"c\"]\n    # This should yield nothing (empty chunks or no chunks) just like chunked(rows, 0)\n    # instead of raising a ValueError from islice.\n    chunks = list(ichunked(rows, 0))\n    assert chunks == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    chunks = list(ichunked(rows, 0))\n             ^^^^^^^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:3723: in ichunked\n    rest = islice(iterator, n - 1)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nE   ValueError: Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: Stop argument for islice() must be...\n1 failed in 0.58s\n",
+      "match": true,
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.37s\n"
+    }
+  ]
+}

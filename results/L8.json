@@ -1,0 +1,38 @@
+{
+  "bug": "L8",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "tabulate/__init__.py",
+    "test/test_regression.py",
+    "test/test_internal.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "seconds": 41,
+  "tries": [
+    {
+      "guess": "Using maxcolwidths on a table containing None values fails with a TypeError because NoneType cannot be passed to _type() inside _wrap_text_to_colwidths.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    result = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert result is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.44s\n",
+      "match": false
+    },
+    {
+      "guess": "Using maxcolwidths on a table containing None values fails because _wrap_text_to_colwidths calls _type() on None, raising a TypeError since NoneType takes no arguments.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate.tabulate(table, headers=\"keys\", tablefmt=\"plain\", maxcolwidths=40)\n    assert res is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.30s\n",
+      "match": false
+    },
+    {
+      "guess": "Using maxcolwidths on a table containing None values fails with TypeError because None is passed to str(cell) or _type() in _wrap_text_to_colwidths.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    result = tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert result is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
+      "match": false
+    },
+    {
+      "guess": "Using maxcolwidths on a table containing None values fails with TypeError because NoneType cannot be called in _wrap_text_to_colwidths when evaluating cell types.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
+      "match": false
+    }
+  ]
+}
