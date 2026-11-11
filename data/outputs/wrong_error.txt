@@ -1,0 +1,13 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________________ test_bug ___________________________________
+test_bug.py:5: in test_bug
+    assert humanize.naturaldelta(5, minimum_unit="years") == "5 seconds"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/humanize/time.py:144: in naturaldelta
+    raise ValueError(msg)
+E   ValueError: Minimum unit 'years' not supported
+=========================== short test summary info ============================
+FAILED test_bug.py::test_bug - ValueError: Minimum unit 'years' not supported
+1 failed in 0.30s
+

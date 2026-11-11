@@ -1,0 +1,497 @@
+<title>Bug Agent 14-Day Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column, opened by the finished result, then a 14-cell map that links to a dated day-by-day ledger. */
+:root {
+  --bg: #f3f6f8; --surface: #ffffff; --fg: #17242d; --muted: #566772; --line: #d3dde3;
+  --accent: #0b6a8a; --accent-soft: #dcedf3; --on-accent: #ffffff;
+  --fail: #b3342c; --pass: #1c7a4c; --gemini: #6a3fa8; --gemini-soft: #ece5f6;
+  --term: #e7edf1;
+  --display: "Familjen Grotesk", "Segoe UI", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111a20; --surface: #18242c; --fg: #e6eef2; --muted: #9db0bb; --line: #2e3f49;
+    --accent: #62bfdc; --accent-soft: #17394a; --on-accent: #0c1317;
+    --fail: #f0857c; --pass: #62cf97; --gemini: #bd9ff0; --gemini-soft: #30264a;
+    --term: #0c1317; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111a20; --surface: #18242c; --fg: #e6eef2; --muted: #9db0bb; --line: #2e3f49;
+  --accent: #62bfdc; --accent-soft: #17394a; --on-accent: #0c1317;
+  --fail: #f0857c; --pass: #62cf97; --gemini: #bd9ff0; --gemini-soft: #30264a;
+  --term: #0c1317; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font: 400 17px/1.55 var(--body); }
+.page {
+  max-width: 800px; margin: 0 auto; display: grid; gap: 56px;
+  padding-block: 44px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page > * { min-width: 0; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2.1rem, 6vw, 3.1rem); }
+h2 { font-size: 1.6rem; margin-bottom: 12px; }
+h3 { font-size: 1.14rem; }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--accent); }
+a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--mono); font-size: .86em; }
+.lede { font-size: 1.2rem; margin-top: 14px; }
+.intro { margin-bottom: 16px; }
+.muted { color: var(--muted); }
+
+.terminal {
+  background: var(--term); border: 1px solid var(--line); border-radius: 6px;
+  padding: 14px 16px; overflow-x: auto;
+  font: 400 .82rem/1.7 var(--mono); white-space: pre;
+}
+header .terminal { margin-top: 24px; }
+.terminal .fail { color: var(--fail); font-weight: 600; }
+.terminal .pass { color: var(--pass); font-weight: 600; }
+.terminal .dim { color: var(--muted); }
+
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.node { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+.node strong { display: block; font-family: var(--display); font-size: 1.02rem; }
+.node span { color: var(--muted); font-size: .92rem; line-height: 1.35; display: block; margin-top: 4px; }
+.retry { border: 1px dashed var(--accent); color: var(--accent); border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: .95rem; }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .96rem; }
+th { text-align: left; font: 600 .72rem var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 0 12px 8px 0; white-space: nowrap; }
+td { padding: 9px 12px 9px 0; border-top: 1px solid var(--line); vertical-align: top; }
+td.file { white-space: nowrap; font-family: var(--mono); font-size: .84rem; }
+td b { white-space: nowrap; }
+.who { font: 600 .7rem var(--mono); letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; white-space: nowrap; background: var(--accent-soft); color: var(--accent); }
+.who.g { background: var(--gemini-soft); color: var(--gemini); }
+
+.map { display: flex; flex-wrap: wrap; gap: 14px 18px; margin-top: 4px; }
+.phase { display: grid; gap: 6px; min-width: 0; }
+.phase span { font: 600 .7rem var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.cells { display: flex; gap: 4px; }
+.cell {
+  width: 36px; height: 36px; display: grid; place-items: center; border-radius: 5px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  font: 600 .84rem var(--mono); text-decoration: none; font-variant-numeric: tabular-nums;
+}
+.cell:hover { border-color: var(--accent); }
+.cell.done { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.progress { font: 600 .84rem var(--mono); color: var(--accent); margin-top: 14px; }
+
+.phase-head { margin-top: 34px; padding-bottom: 8px; border-bottom: 2px solid var(--fg); display: grid; gap: 2px; }
+.phase-head:first-child { margin-top: 0; }
+.phase-head p { color: var(--muted); font-size: .98rem; }
+
+.day { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 0 14px; padding: 18px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 12px; }
+.day:target h3 { color: var(--accent); }
+.num { font: 600 1.5rem/1.1 var(--display); color: var(--accent); font-variant-numeric: tabular-nums; }
+.num small { display: block; font: 600 .66rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.body { min-width: 0; display: grid; gap: 8px; }
+.make { font: 400 .8rem var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.body ol { margin: 0; padding-left: 1.25em; display: grid; gap: 3px; }
+.body ol li { padding-left: 2px; max-width: 65ch; }
+.done-when { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; cursor: pointer; }
+.done-when input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--accent); }
+.done-when b { font-weight: 600; }
+.done-when input:checked + span { color: var(--muted); text-decoration: line-through; }
+.day .terminal { font-size: .78rem; }
+
+.notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.note p { font-size: .97rem; }
+
+.cut { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; }
+.cut h3 { margin-bottom: 6px; }
+.cut ul { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; }
+
+.resume { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; display: grid; gap: 10px; margin-bottom: 12px; }
+.resume ul { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; }
+.qa { display: grid; gap: 14px; }
+.qa b { display: block; }
+.foot { color: var(--muted); font-size: .9rem; }
+
+@media (max-width: 620px) {
+  .flow, .notes, .cut { grid-template-columns: minmax(0, 1fr); }
+  .day { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .num small { display: inline; margin-right: 6px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Build the AI Bug Reproducing Agent in 14 days</h1>
+    <p class="lede">You give it a GitHub bug report. It guesses the cause, writes a test, and runs the test in Docker until the same error appears. Then it saves the proof.</p>
+    <div class="terminal" aria-label="Example of the final result"><span class="dim">&gt; python agent.py your-name/bug-samples 2</span>
+attempt 1  guess: bad input type       test passed   <span class="dim">try again</span>
+attempt 2  guess: empty cart not handled
+           <span class="fail">FAILED test_bug.py::test_empty_cart - ZeroDivisionError</span>
+<span class="pass">SAME ERROR AS THE BUG on attempt 2 of 4</span>
+<span class="pass">Saved to results/2.json</span></div>
+  </header>
+
+  <section>
+    <h2>The idea in one minute</h2>
+    <p class="intro">Before anyone can fix a bug, someone must make it happen on purpose. That is called <b>reproducing</b> it, and it often takes hours. Your agent does this first job. It does not fix the bug.</p>
+    <div class="flow">
+      <div class="node"><strong>Read</strong><span>Download the code and the bug report</span></div>
+      <div class="node"><strong>Think</strong><span>Gemini guesses the cause and writes a test</span></div>
+      <div class="node"><strong>Run</strong><span>Docker runs the test in a sealed box</span></div>
+      <div class="node"><strong>Judge</strong><span>Python checks if the error matches the bug</span></div>
+    </div>
+    <div class="retry">No match? The output goes back to Gemini for a new guess, up to 4 attempts. This loop makes it an agent. A single AI call would only be a chatbot answer.</div>
+  </section>
+
+  <section>
+    <h2>The components</h2>
+    <p class="intro">Each component is one small file with one job, about 40 lines. You must be able to explain any of them line by line.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Component</th><th>File</th><th>Its one job</th><th>Tool</th></tr></thead>
+        <tbody>
+          <tr><td><b>Downloader</b></td><td class="file">download.py</td><td>Gets the code and the bug report</td><td>Git, GitHub API</td></tr>
+          <tr><td><b>Gemini link</b></td><td class="file">llm.py</td><td>Sends a message, returns the answer</td><td>google-genai</td></tr>
+          <tr><td><b>Instructions</b></td><td class="file">prompts.py</td><td>Holds what we ask Gemini</td><td>Plain text</td></tr>
+          <tr><td><b>File picker</b></td><td class="file">pick_files.py</td><td>Finds the code related to the bug</td><td>Python</td></tr>
+          <tr><td><b>Sandbox</b></td><td class="file">docker_run.py, Dockerfile</td><td>Runs the test safely, captures output</td><td>Docker, pytest</td></tr>
+          <tr><td><b>Judge</b></td><td class="file">check.py</td><td>Decides if this is really the same bug</td><td>Python</td></tr>
+          <tr><td><b>Main loop</b></td><td class="file">agent.py</td><td>Guess, test, judge, try again</td><td>Python</td></tr>
+          <tr><td><b>Record</b></td><td class="file">save.py</td><td>Writes every attempt to a JSON file</td><td>Python</td></tr>
+          <tr><td><b>Scorecard</b></td><td class="file">evaluate.py</td><td>Runs many bugs, gives your resume number</td><td>Python</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The process in one run</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>What happens</th><th>Who</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Clone the project and save the bug report as text</td><td><span class="who">Python</span></td></tr>
+          <tr><td>2</td><td>Pull out the error name, file names and keywords from the report</td><td><span class="who g">Gemini</span></td></tr>
+          <tr><td>3</td><td>Search the code and keep only the matching files</td><td><span class="who">Python</span></td></tr>
+          <tr><td>4</td><td>Read those files, give a likely cause, write one test</td><td><span class="who g">Gemini</span></td></tr>
+          <tr><td>5</td><td>Run the test in Docker with no internet and a time limit</td><td><span class="who">Python</span></td></tr>
+          <tr><td>6</td><td>Check that the test failed with the same error as the bug</td><td><span class="who">Python</span></td></tr>
+          <tr><td>7</td><td>If not, send the output back and repeat from step 4, 4 attempts at most</td><td><span class="who g">Gemini</span></td></tr>
+          <tr><td>8</td><td>Save every guess, test and error, reproduced or not</td><td><span class="who">Python</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your 14 days</h2>
+    <p>This plan expects about 2 to 3 hours a day. Tick a day when its check passes. If a check fails, stay on that day. Do not move on.</p>
+    <p class="progress" id="progress" aria-live="polite">0 of 14 days done</p>
+    <nav class="map" aria-label="Jump to a day" style="margin-top:12px">
+      <div class="phase"><span>Get ready</span><div class="cells"><a class="cell" href="#day-1">1</a><a class="cell" href="#day-2">2</a></div></div>
+      <div class="phase"><span>Build the parts</span><div class="cells"><a class="cell" href="#day-3">3</a><a class="cell" href="#day-4">4</a><a class="cell" href="#day-5">5</a><a class="cell" href="#day-6">6</a><a class="cell" href="#day-7">7</a></div></div>
+      <div class="phase"><span>Make it an agent</span><div class="cells"><a class="cell" href="#day-8">8</a><a class="cell" href="#day-9">9</a><a class="cell" href="#day-10">10</a></div></div>
+      <div class="phase"><span>Prove it</span><div class="cells"><a class="cell" href="#day-11">11</a><a class="cell" href="#day-12">12</a></div></div>
+      <div class="phase"><span>Show it</span><div class="cells"><a class="cell" href="#day-13">13</a><a class="cell" href="#day-14">14</a></div></div>
+    </nav>
+  </section>
+
+  <section>
+    <div class="phase-head"><h3>Get ready</h3><p>By the end of day 2, your tools work and you have bugs to practise on.</p></div>
+
+    <article class="day" id="day-1">
+      <div class="num"><small>Day</small>1</div>
+      <div class="body">
+        <h3>Install your tools</h3>
+        <p class="make">Python 3.12+, VS Code, Git, Docker Desktop, GitHub account, Gemini key</p>
+        <ol>
+          <li>Install each tool. In the Python installer, tick "Add python.exe to PATH".</li>
+          <li>Docker Desktop works on Windows 11 Home through WSL 2. Keep that option on and restart if asked.</li>
+          <li>Create a free key at <a href="https://aistudio.google.com/">aistudio.google.com</a>. Never paste it into chat or GitHub.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d1"><span><b>Done when:</b> <code>python --version</code>, <code>git --version</code> and <code>docker run hello-world</code> all work in PowerShell.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-2">
+      <div class="num"><small>Day</small>2</div>
+      <div class="body">
+        <h3>Make your practice bugs</h3>
+        <p class="make">New GitHub repo: bug-samples</p>
+        <ol>
+          <li>Write a tiny shop app in Python, about 30 lines.</li>
+          <li>Hide 3 bugs in it: an empty cart causes <code>ZeroDivisionError</code>, a missing item causes <code>KeyError</code>, text as a price causes <code>TypeError</code>.</li>
+          <li>Write each bug as a GitHub issue, the way a real user would. Do not say where the bug is.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d2"><span><b>Done when:</b> you can make each of the 3 errors happen by hand, and 3 issues exist on GitHub.</span></label>
+      </div>
+    </article>
+
+    <div class="phase-head"><h3>Build the parts</h3><p>Each part works alone before anything is joined. By the end of day 7, the hard parts are finished.</p></div>
+
+    <article class="day" id="day-3">
+      <div class="num"><small>Day</small>3</div>
+      <div class="body">
+        <h3>Talk to Gemini</h3>
+        <p class="make">llm.py, .env, .gitignore, requirements.txt</p>
+        <ol>
+          <li>Create the project: <code>git init</code>, then <code>python -m venv .venv</code>, then <code>.venv\Scripts\Activate.ps1</code>.</li>
+          <li>Install <code>google-genai</code> and <code>python-dotenv</code>. Put your key in <code>.env</code> and add <code>.env</code> to <code>.gitignore</code> before your first commit.</li>
+          <li>Write one function, <code>ask(prompt)</code>. Copy the current Flash-Lite model name from AI Studio.</li>
+        </ol>
+        <div class="terminal">from google import genai
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+answer = client.models.generate_content(model=MODEL, contents=prompt)
+return answer.text</div>
+        <label class="done-when"><input type="checkbox" id="d3"><span><b>Done when:</b> Gemini answers in your terminal, and <code>git status</code> does not list <code>.env</code>.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-4">
+      <div class="num"><small>Day</small>4</div>
+      <div class="body">
+        <h3>Get the code and the bug report</h3>
+        <p class="make">download.py</p>
+        <ol>
+          <li>Run <code>git clone</code> from Python with <code>subprocess</code>, into a <code>workspace/</code> folder. Add that folder to <code>.gitignore</code>.</li>
+          <li>Fetch the issue with <code>requests</code> from <code>api.github.com/repos/OWNER/REPO/issues/NUMBER</code>.</li>
+          <li>Save the title and body to a text file.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d4"><span><b>Done when:</b> one command gives you the cloned code and a text file with your issue.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-5">
+      <div class="num"><small>Day</small>5</div>
+      <div class="body">
+        <h3>Read the bug, pick the files</h3>
+        <p class="make">prompts.py, pick_files.py</p>
+        <ol>
+          <li>Write your first prompt. Ask Gemini to return only JSON with <code>error_type</code>, <code>keywords</code> and <code>file_names</code>.</li>
+          <li>Search all <code>.py</code> files for those words and rank files by number of matches.</li>
+          <li>Keep the top 3 files. This saves your free requests and helps Gemini focus.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d5"><span><b>Done when:</b> for all 3 sample bugs, the right error name and the right file are printed.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-6">
+      <div class="num"><small>Day</small>6</div>
+      <div class="body">
+        <h3>Build the sealed box</h3>
+        <p class="make">Dockerfile, docker_run.py</p>
+        <ol>
+          <li>Write a 4-line Dockerfile: start from <code>python:3.12-slim</code>, install pytest, build it as <code>bug-box</code>.</li>
+          <li>Write a test by hand first. No AI today.</li>
+          <li>Run it from Python with <code>subprocess.run</code> and capture the output. Mount only the cloned project, never your whole laptop.</li>
+        </ol>
+        <div class="terminal">docker run --rm --network none --memory 512m -v "PROJECT_FOLDER:/app" -w /app bug-box timeout 60 pytest test_bug.py</div>
+        <label class="done-when"><input type="checkbox" id="d6"><span><b>Done when:</b> your hand-written test fails in Docker, its output prints in Python, and a test with an endless loop stops at 60 seconds.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-7">
+      <div class="num"><small>Day</small>7</div>
+      <div class="body">
+        <h3>Build the judge</h3>
+        <p class="make">check.py, test_check.py</p>
+        <p>This is the most important file in the project. A failing test proves nothing unless it fails for the right reason. Count a match only when all 3 rules are true:</p>
+        <ol>
+          <li>pytest shows a <code>FAILED</code> line, which means the test ran. A broken test shows <code>ERROR</code> instead.</li>
+          <li>That line names the same error as the bug report.</li>
+          <li>The traceback passes through a project file. This catches a test that simply runs <code>raise ZeroDivisionError</code>.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d7"><span><b>Done when:</b> <code>test_check.py</code> passes on 4 saved outputs: a real match, a wrong error, a broken test and a cheating test.</span></label>
+      </div>
+    </article>
+
+    <div class="phase-head"><h3>Make it an agent</h3><p>Join the parts. By the end of day 10, it reproduces your sample bugs from one command.</p></div>
+
+    <article class="day" id="day-8">
+      <div class="num"><small>Day</small>8</div>
+      <div class="body">
+        <h3>One full attempt</h3>
+        <p class="make">agent.py, prompts.py</p>
+        <ol>
+          <li>Add a second prompt. Give Gemini the bug and the picked files, and ask for JSON with <code>guess</code> and <code>test_code</code>.</li>
+          <li>Write <code>test_code</code> to <code>test_bug.py</code> in the cloned project.</li>
+          <li>In <code>agent.py</code>, call the parts in order: download, read, pick, guess, run, judge.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d8"><span><b>Done when:</b> one command runs the whole chain on sample bug 1 and prints match or no match.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-9">
+      <div class="num"><small>Day</small>9</div>
+      <div class="body">
+        <h3>Add the loop</h3>
+        <p class="make">agent.py, prompts.py</p>
+        <ol>
+          <li>Wrap the attempt in <code>for attempt in range(4)</code>. Stop as soon as the judge says match.</li>
+          <li>Send each earlier guess and its output to Gemini with the words "this did not work, try a different cause".</li>
+          <li>If Gemini returns bad JSON, count it as a failed attempt. Do not crash.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d9"><span><b>Done when:</b> you make the first attempt fail on purpose, and you see the second guess change because of that output.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-10">
+      <div class="num"><small>Day</small>10</div>
+      <div class="body">
+        <h3>Save results and handle errors</h3>
+        <p class="make">save.py, agent.py</p>
+        <ol>
+          <li>Save every guess, test, output and final status to <code>results/NUMBER.json</code>.</li>
+          <li>Show clear messages when Docker is off, the repo is missing, or the Gemini limit is reached. On a limit error, wait and retry once.</li>
+          <li>Accept the repo and issue number from the command line.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d10"><span><b>Done when:</b> all 3 sample bugs run from one command each, and each one has a readable result file.</span></label>
+      </div>
+    </article>
+
+    <div class="phase-head"><h3>Prove it</h3><p>Your own bugs are easy. Real bugs give you an honest number, and that number is what makes this project stand out.</p></div>
+
+    <article class="day" id="day-11">
+      <div class="num"><small>Day</small>11</div>
+      <div class="body">
+        <h3>Try real bugs</h3>
+        <p class="make">bugs.csv, Dockerfile</p>
+        <ol>
+          <li>Pick 5 to 10 closed issues from small, pure-Python public projects. Choose ones that show a clear error and a traceback.</li>
+          <li>Note the commit just before each fix, so the bug is still in the code. Add <code>git checkout</code> to <code>download.py</code>.</li>
+          <li>Install each project's packages while building the image, because the test run has no internet.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d11"><span><b>Done when:</b> <code>bugs.csv</code> is ready, and the agent has run on at least 1 real bug, whatever the result.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-12">
+      <div class="num"><small>Day</small>12</div>
+      <div class="body">
+        <h3>Get your number</h3>
+        <p class="make">evaluate.py, results/summary.csv</p>
+        <ol>
+          <li>Loop over <code>bugs.csv</code>. Skip any bug that already has a result, so a stopped run can continue tomorrow.</li>
+          <li>Record for each bug: reproduced or not, attempts used, and time taken.</li>
+          <li>Find 2 numbers: bugs reproduced on attempt 1, and bugs reproduced in any attempt. The difference shows what your loop adds.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d12"><span><b>Done when:</b> <code>summary.csv</code> exists, and you can say "X of Y real bugs" from your own measured results.</span></label>
+      </div>
+    </article>
+
+    <div class="phase-head"><h3>Show it</h3><p>Recruiters only see what is public and easy to read.</p></div>
+
+    <article class="day" id="day-13">
+      <div class="num"><small>Day</small>13</div>
+      <div class="body">
+        <h3>Publish it</h3>
+        <p class="make">README.md, .github/workflows/tests.yml</p>
+        <ol>
+          <li>Write the README: the problem, a diagram, how to run it, your results table, and what it cannot do.</li>
+          <li>Add a terminal screenshot of a real run.</li>
+          <li>Add a small GitHub Action that runs <code>test_check.py</code> on every push.</li>
+          <li>Before pushing, run <code>git log --all -- .env</code>. It must print nothing.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d13"><span><b>Done when:</b> the repo is public, the Action shows green, and your key appears nowhere.</span></label>
+      </div>
+    </article>
+
+    <article class="day" id="day-14">
+      <div class="num"><small>Day</small>14</div>
+      <div class="body">
+        <h3>Test it as a stranger, then prepare to explain it</h3>
+        <p class="make">Resume, interview answers</p>
+        <ol>
+          <li>Clone your repo into a new folder and follow only your README. Fix anything that breaks.</li>
+          <li>Add the project to your resume with your real numbers.</li>
+          <li>Close your notes and explain each file out loud. Then answer the questions below.</li>
+        </ol>
+        <label class="done-when"><input type="checkbox" id="d14"><span><b>Done when:</b> a fresh clone works, and you can explain <code>agent.py</code> and <code>check.py</code> without looking at them.</span></label>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>If you fall behind</h2>
+    <div class="cut">
+      <div><h3>Cut these first</h3><ul>
+        <li>Use 5 real bugs, not 10</li>
+        <li>Skip the GitHub Action</li>
+        <li>Skip the retry on limit errors</li>
+        <li>Use a screenshot, not a demo video</li>
+      </ul></div>
+      <div><h3>Never cut these</h3><ul>
+        <li>The Docker sandbox</li>
+        <li>The 3 rules in <code>check.py</code></li>
+        <li>The retry loop</li>
+        <li>A measured result on real bugs</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Know these before you start</h2>
+    <div class="notes">
+      <div class="note"><h3>Free Gemini limits are small</h3><p>Forum users report about 20 requests a day on newer Flash models and about 500 on Flash-Lite. Check your real limits in AI Studio. One bug uses 2 to 5 requests, so start on Flash-Lite and spread real-bug runs across days 11 to 13.</p></div>
+      <div class="note"><h3>Keep the scope small</h3><p>This agent handles Python bugs that raise an error. It will not handle UI bugs, timing bugs, or wrong results with no error. Saying this clearly in your README and interview shows good judgement.</p></div>
+      <div class="note"><h3>Expect a modest score</h3><p>Many real bugs will not reproduce, and that is normal. A real "4 of 10" that you can explain is far stronger than a claim you cannot defend. Your 3 sample bugs do not count in this number.</p></div>
+      <div class="note"><h3>Be careful with code and data</h3><p>Docker lowers the risk from AI-written code, but does not remove it. On the free tier, Google may use what you send to improve its products. Send only public code, never company code.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your resume entry</h2>
+    <div class="resume">
+      <h3>AI Bug Reproducing Agent · Personal Project · Python, Gemini API, Docker, pytest</h3>
+      <ul>
+        <li>Built an AI agent that reads GitHub bug reports, writes tests, and runs them in network-isolated Docker containers, retrying with failure feedback for up to 4 attempts.</li>
+        <li>Designed a checker that accepts a result only when the failure matches the reported error and its traceback passes through project code, which rejects false positives.</li>
+        <li>Reproduced <b>[X] of [Y]</b> real open-source bugs, up from <b>[Z]</b> with a single attempt, measured with an automated evaluation script.</li>
+      </ul>
+    </div>
+    <p class="foot">Fill in X, Y and Z from <code>summary.csv</code>. List it as a personal project, and claim only what you built and can explain. If asked, be open about any AI help you used.</p>
+  </section>
+
+  <section>
+    <h2>What interviewers will ask</h2>
+    <div class="qa">
+      <p><b>Why a loop and not one AI call?</b> The first guess is often wrong. The real output gives Gemini new evidence, and your attempt 1 vs final score shows how much this helps.</p>
+      <p><b>How do you know the bug is really reproduced?</b> Python decides, not the AI. The test must run, fail with the reported error, and fail inside project code.</p>
+      <p><b>How do you keep AI-written code safe?</b> It runs in Docker with no internet, a memory limit, a 60-second limit and access to only one folder.</p>
+      <p><b>Why not send the whole project to Gemini?</b> It costs requests and tokens and adds noise. A simple keyword search sends only the likely files.</p>
+      <p><b>What would you improve next?</b> Point to your failed bugs in <code>summary.csv</code> and name the most common reason they failed. Your own data makes this answer strong.</p>
+    </div>
+  </section>
+
+  <p class="foot">Full feature overview: <a href="https://claude.ai/artifact/FAfZ2Ao87vWE7HySJR7ja4">AI Bug Reproducing Agent plan</a>. Gemini details from <a href="https://ai.google.dev/gemini-api/docs/rate-limits">Google's rate limit docs</a> and <a href="https://discuss.ai.google.dev/t/gemini-3-8-flash-free-tier-20-rpd-is-too-limited-for-practical-evaluation/180609">this forum report</a>.</p>
+</div>
+
+<script>
+(function () {
+  var boxes = document.querySelectorAll('.done-when input');
+  var progress = document.getElementById('progress');
+  function update() {
+    var done = 0;
+    boxes.forEach(function (b) {
+      if (b.checked) done++;
+      var cell = document.querySelector('.cell[href="#day-' + b.id.slice(1) + '"]');
+      if (cell) cell.classList.toggle('done', b.checked);
+    });
+    progress.textContent = done + ' of ' + boxes.length + ' days done';
+  }
+  boxes.forEach(function (b) {
+    try { b.checked = localStorage.getItem(b.id) === '1'; } catch (e) {}
+    b.addEventListener('change', function () {
+      try { localStorage.setItem(b.id, b.checked ? '1' : '0'); } catch (e) {}
+      update();
+    });
+  });
+  update();
+})();
+</script>

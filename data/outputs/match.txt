@@ -1,0 +1,14 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________________ test_bug ___________________________________
+test_bug.py:6: in test_bug
+    assert humanize.naturaldelta(float("inf")) == "inf"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/humanize/time.py:151: in naturaldelta
+    int(value)  # Explicitly don't support string such as "NaN" or "inf"
+    ^^^^^^^^^^
+E   OverflowError: cannot convert float infinity to integer
+=========================== short test summary info ============================
+FAILED test_bug.py::test_bug - OverflowError: cannot convert float infinity t...
+1 failed in 0.34s
+
