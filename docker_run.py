@@ -24,7 +24,10 @@ def prepare_box(folder, bug_id):
     name = image + "-setup"
     subprocess.run(["docker", "rm", "-f", name], capture_output=True)
     mount = ["-v", os.path.abspath(folder) + ":/app", "-w", "/app"]
-    subprocess.run(["docker", "run", "--name", name, *VERSION, *mount, "bug-box", "sh", "-c", INSTALL], check=True)
+    setup = subprocess.run(["docker", "run", "--name", name, *VERSION, *mount, "bug-box", "sh", "-c", INSTALL])
+    if setup.returncode != 0:
+        subprocess.run(["docker", "rm", name], capture_output=True)
+        raise RuntimeError("Could not set up this project in the room (pip install failed).")
     subprocess.run(["docker", "commit", name, image], check=True, capture_output=True)
     subprocess.run(["docker", "rm", name], capture_output=True)
     return image

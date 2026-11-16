@@ -1,0 +1,20 @@
+{
+  "bug": "more-itertools-more-itertools-1354",
+  "issue": "https://github.com/more-itertools/more-itertools/issues/1354",
+  "error_to_find": "ValueError",
+  "files_picked": [
+    "more_itertools/more.py",
+    "more_itertools/recipes.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": null,
+  "seconds": 32,
+  "tries": [
+    {
+      "guess": "outer_product fails when ys is empty because it attempts to use batched() with n=0, which raises a ValueError.",
+      "test_code": "from operator import mul\nfrom more_itertools import outer_product\n\n\ndef test_bug():\n    assert list(outer_product(mul, [1, 2], [])) == [(), ()]\n    assert list(outer_product(mul, [], [])) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert list(outer_product(mul, [1, 2], [])) == [(), ()]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmore_itertools/recipes.py:944: in _batched\n    raise ValueError('n must be at least one')\nE   ValueError: n must be at least one\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: n must be at least one\n1 failed in 0.81s\n",
+      "match": true
+    }
+  ]
+}

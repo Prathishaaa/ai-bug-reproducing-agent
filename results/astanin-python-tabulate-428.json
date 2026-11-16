@@ -1,0 +1,21 @@
+{
+  "bug": "astanin-python-tabulate-428",
+  "issue": "https://github.com/astanin/python-tabulate/issues/428",
+  "error_to_find": "ValueError",
+  "files_picked": [
+    "tabulate/__init__.py",
+    "test/test_output.py",
+    "test/test_regression.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": null,
+  "seconds": 40,
+  "tries": [
+    {
+      "guess": "In `_wrap_text_to_colwidths`, `numparse` is passed positionally into `_type(cell, numparse)(cell)` where `_type`'s second parameter is `has_invisible`, causing a `ValueError` for number-ish strings like '80,443' when `disable_numparse=True` and `maxcolwidths` are combined.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    tabulate(\n        [['ports', 'str', 'comma-separated port list', '80,443']],\n        ['name', 'type', 'desc', 'default'],\n        tablefmt='grid',\n        disable_numparse=True,\n        maxcolwidths=40,\n    )\n",
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0\nrootdir: /app\nconfigfile: pyproject.toml\ncollected 1 item\n\ntest_bug.py F                                                            [100%]\n\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    tabulate(\ntabulate/__init__.py:2258: in tabulate\n    list_of_lists = _wrap_text_to_colwidths(\ntabulate/__init__.py:1655: in _wrap_text_to_colwidths\n    else str(_type(cell, numparse)(cell))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   ValueError: invalid literal for int() with base 10: '80,443'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: invalid literal for int() with bas...\n============================== 1 failed in 0.57s ===============================\n",
+      "match": true
+    }
+  ]
+}

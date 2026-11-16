@@ -5,7 +5,7 @@ import time
 
 from check import is_match
 from docker_run import run_test
-from download import find_bug, get_code, get_issue
+from download import get_bug, get_code, get_issue
 from llm import ask_json
 from pick_files import pick_files, read_bug
 from prompts import write_test_prompt
@@ -37,9 +37,10 @@ def try_once(folder, bug_id, issue, code, history):
     return {"guess": guess, "test_code": test_code, "output": run_test(folder, bug_id)}
 
 
-def reproduce(bug_id):
+def reproduce(bug_text):
     start = time.time()
-    bug = find_bug(bug_id)
+    bug = get_bug(bug_text)  # a bug ID like L1, or a GitHub issue link
+    bug_id = bug["id"]
     folder = os.path.join("workspace", bug_id)
 
     print("1. Getting the code and the bug report")
@@ -73,14 +74,16 @@ def reproduce(bug_id):
     print(f"5. {status.upper()} after {len(tries)} tries")
 
     # Scoring only: does the winning test pass on the developers' real fix?
-    verified = None
-    if status == "reproduced":
+    verified = None  # stays None for links: there is no known fix to compare with
+    if status == "reproduced" and not bug["fix_commit"]:
+        print("6. No known fix for this bug, so only the judge's 3 rules were used")
+    if status == "reproduced" and bug["fix_commit"]:
         verified, fix_output = passes_after_fix(bug, folder, tries[-1]["test_code"])
         tries[-1]["output_after_fix"] = fix_output
         print("6. Check with the real fix:", "PASSED, real proof" if verified else "FAILED, the test is not about this bug")
 
     path = save_result({
-        "bug": bug_id, "error_to_find": info["error_type"], "files_picked": names,
+        "bug": bug_id, "issue": bug["issue_url"], "error_to_find": info["error_type"], "files_picked": names,
         "status": status, "verified_with_fix": verified,
         "seconds": round(time.time() - start), "tries": tries,
     })
@@ -88,5 +91,8 @@ def reproduce(bug_id):
 
 
 if __name__ == "__main__":
-    # Try it: python agent.py L1
-    reproduce(sys.argv[1])
+    # Try it: python agent.py L1   or   python agent.py https://github.com/owner/repo/issues/123
+    try:
+        reproduce(sys.argv[1])
+    except RuntimeError as error:
+        print("Stopped:", error)
