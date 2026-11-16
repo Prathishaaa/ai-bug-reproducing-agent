@@ -3,10 +3,16 @@ import os
 import subprocess
 import sys
 
-# Lets projects install without needing their git history.
-VERSION = ["-e", "SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0"]
-# Installs the project and its test packages. Unknown extras like [tests] are just skipped.
-INSTALL = "pip install -q --root-user-action=ignore -e .[test,tests,testing]"
+PIP = "pip install -q --root-user-action=ignore"
+# Install the project and its test packages. Unknown extras like [tests] are just skipped.
+# Then install test packages listed in other files or groups. If one of those fails, keep going.
+INSTALL = (
+    f"{PIP} -e .[test,tests,testing] || exit 1; "
+    f"for f in requirements/test*.txt requirements-test*.txt test-requirements.txt requirements/dev.txt; "
+    f"do [ -f $f ] && {PIP} -r $f; done; "
+    f"for g in test tests dev; do {PIP} --group $g 2>/dev/null; done; "
+    f"{PIP} -U pytest; exit 0"  # those lists can bring an old pytest that breaks on Python 3.12
+)
 
 
 def check_docker():
@@ -24,7 +30,7 @@ def prepare_box(folder, bug_id):
     name = image + "-setup"
     subprocess.run(["docker", "rm", "-f", name], capture_output=True)
     mount = ["-v", os.path.abspath(folder) + ":/app", "-w", "/app"]
-    setup = subprocess.run(["docker", "run", "--name", name, *VERSION, *mount, "bug-box", "sh", "-c", INSTALL])
+    setup = subprocess.run(["docker", "run", "--name", name, *mount, "bug-box", "sh", "-c", INSTALL])
     if setup.returncode != 0:
         subprocess.run(["docker", "rm", name], capture_output=True)
         raise RuntimeError("Could not set up this project in the room (pip install failed).")
@@ -37,7 +43,7 @@ def run_test(folder, bug_id, test_file="test_bug.py"):
     # Run the test in the snapshot WITHOUT internet, with 512 MB memory and 60 seconds at most.
     check_docker()
     command = [
-        "docker", "run", "--rm", "--network", "none", "--memory", "512m", *VERSION,
+        "docker", "run", "--rm", "--network", "none", "--memory", "512m",
         "-v", os.path.abspath(folder) + ":/app", "-w", "/app",
         prepare_box(folder, bug_id),
         "timeout", "60", "pytest", "-q", "--color=no", "--tb=short", "-p", "no:cacheprovider", test_file,

@@ -10,22 +10,29 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 16,
+  "seconds": 37,
   "tries": [
     {
-      "guess": "Using .partition(':') on IPv6 addresses splits them incorrectly at the first colon inside the address instead of handling the port separator correctly.",
+      "guess": "Using .partition(\":\") on IPv6 addresses splits them incorrectly at the first colon inside the IPv6 address rather than the port separator.",
       "test_code": "import flask\n\ndef test_bug(app):\n    base_url = \"http://[::1]:8000/\"\n    client = app.test_client()\n\n    @app.get(\"/\")\n    def index():\n        return str(flask.session.get(\"value\"))\n\n    with client.session_transaction(base_url=base_url) as sess:\n        sess[\"value\"] = 42\n\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\n",
-      "output": "E                                                                        [100%]\n==================================== ERRORS ====================================\n__________________________ ERROR at setup of test_bug __________________________\nfile /app/test_bug.py, line 3\n  def test_bug(app):\nE       fixture 'app' not found\n>       available fixtures: capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory\n>       use 'pytest --fixtures [testpath]' for help on them.\n\n/app/test_bug.py:3\n=========================== short test summary info ============================\nERROR test_bug.py::test_bug\n1 error in 0.97s\n",
+      "output": "E                                                                        [100%]\n==================================== ERRORS ====================================\n__________________________ ERROR at setup of test_bug __________________________\nfile /app/test_bug.py, line 3\n  def test_bug(app):\nE       fixture 'app' not found\n>       available fixtures: capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, monkeypatch, platformdirs_isolated, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, subtests, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory\n>       use 'pytest --fixtures [testpath]' for help on them.\n\n/app/test_bug.py:3\n=========================== short test summary info ============================\nERROR test_bug.py::test_bug\n1 error in 0.96s\n",
       "match": false,
       "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
     },
     {
-      "guess": "Using .partition(':') incorrectly splits IPv6 addresses at inner colons instead of the port separator when parsing SERVER_NAME or request host.",
-      "test_code": "import flask\n\ndef test_bug():\n    app = flask.Flask(__name__)\n    app.config[\"SERVER_NAME\"] = \"[::1]:8080\"\n    app.secret_key = \"secret\"\n    base_url = \"http://[::1]:8080/\"\n    client = app.test_client()\n\n    @app.get(\"/\")\n    def index():\n        return str(flask.session.get(\"value\"))\n\n    with client.session_transaction(base_url=base_url) as sess:\n        sess[\"value\"] = 42\n\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\nE   AssertionError: assert 'None' == '42'\nE     \nE     - 42\nE     + None\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'None' == '42'\n1 failed in 0.98s\n",
+      "guess": "Using .partition(\":\") on IPv6 addresses splits them incorrectly at the internal colons rather than the port separator.",
+      "test_code": "import flask\n\ndef test_bug():\n    app = flask.Flask(__name__)\n    base_url = \"http://[::1]:8000/\"\n    client = app.test_client()\n\n    @app.get(\"/\")\n    def index():\n        return str(flask.session.get(\"value\"))\n\n    with client.session_transaction(base_url=base_url) as sess:\n        sess[\"value\"] = 42\n\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:12: in test_bug\n    with client.session_transaction(base_url=base_url) as sess:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/contextlib.py:137: in __enter__\n    return next(self.gen)\n           ^^^^^^^^^^^^^^\nsrc/flask/testing.py:168: in session_transaction\n    raise RuntimeError(\"Session backend did not open a session.\")\nE   RuntimeError: Session backend did not open a session.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - RuntimeError: Session backend did not open a s...\n1 failed in 1.12s\n",
+      "match": false,
+      "reason": "It failed with RuntimeError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "Using .partition(\":\") on IPv6 addresses splits them incorrectly at internal colons instead of the port, causing cookie domain handling and server host parsing to fail.",
+      "test_code": "import flask\n\ndef test_bug():\n    app = flask.Flask(__name__)\n    app.secret_key = \"secret\"\n    base_url = \"http://[::1]:8000/\"\n    client = app.test_client()\n\n    @app.get(\"/\")\n    def index():\n        return str(flask.session.get(\"value\"))\n\n    with client.session_transaction(base_url=base_url) as sess:\n        sess[\"value\"] = 42\n\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:16: in test_bug\n    assert client.get(\"/\", base_url=base_url).text == \"42\"\nE   AssertionError: assert 'None' == '42'\nE     \nE     - 42\nE     + None\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'None' == '42'\n1 failed in 0.87s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.82s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.74s\n"
     }
   ]
 }

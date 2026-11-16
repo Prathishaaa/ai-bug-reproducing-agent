@@ -9,15 +9,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 9,
+  "seconds": 11,
   "tries": [
     {
-      "guess": "When naturaldelta receives an int or float, it explicitly converts it using int(value), which truncates float values like 0.5 to 0 before creating a timedelta.",
-      "test_code": "import humanize\nimport datetime\n\ndef test_bug():\n    assert humanize.naturaldelta(0.5, minimum_unit=\"milliseconds\") == \"500 milliseconds\"\n",
+      "guess": "naturaldelta casts float inputs to int via int(value) instead of converting them to a timedelta using datetime.timedelta(seconds=value), leading to loss of sub-second precision.",
+      "test_code": "import humanize\n\n\ndef test_bug():\n    assert humanize.naturaldelta(0.5, minimum_unit=\"milliseconds\") == \"500 milliseconds\"\n",
       "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert humanize.naturaldelta(0.5, minimum_unit=\"milliseconds\") == \"500 milliseconds\"\nE   AssertionError: assert '0 milliseconds' == '500 milliseconds'\nE     \nE     - 500 milliseconds\nE     ? - -\nE     + 0 milliseconds\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '0 milliseconds' == '50...\n1 failed in 0.42s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.24s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.22s\n"
     }
   ]
 }

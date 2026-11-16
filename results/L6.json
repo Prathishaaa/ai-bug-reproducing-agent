@@ -8,15 +8,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 9,
+  "seconds": 13,
   "tries": [
     {
-      "guess": "Calling interleave_evenly with empty iterables or empty lengths raises an IndexError because it attempts to access lengths_desc[0] without checking if the iterables sequence is empty.",
-      "test_code": "from more_itertools import interleave_evenly\n\ndef test_bug():\n    assert list(interleave_evenly([])) == []\n    assert list(interleave_evenly([], lengths=[])) == []\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert list(interleave_evenly([])) == []\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:1350: in interleave_evenly\n    delta_primary, deltas_secondary = lengths_desc[0], lengths_desc[1:]\n                                      ^^^^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 0.43s\n",
+      "guess": "Calling interleave_evenly with empty iterables or no lengths causes an IndexError because it attempts to access the longest iterable before checking if any iterables were provided.",
+      "test_code": "from more_itertools import interleave_evenly\n\n\ndef test_bug():\n    assert list(interleave_evenly([])) == []\n    assert list(interleave_evenly([], lengths=[])) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert list(interleave_evenly([])) == []\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:1350: in interleave_evenly\n    delta_primary, deltas_secondary = lengths_desc[0], lengths_desc[1:]\n                                      ^^^^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 0.46s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.23s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.32s\n"
     }
   ]
 }

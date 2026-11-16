@@ -1,0 +1,24 @@
+{
+  "bug": "L10",
+  "issue": "https://github.com/pallets/markupsafe/issues/310",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/markupsafe/__init__.py",
+    "src/markupsafe/_native.py",
+    "setup.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 12,
+  "tries": [
+    {
+      "guess": "Markup.striptags fails to remove HTML tags or comments containing newlines because the regular expressions do not use the re.DOTALL flag.",
+      "test_code": "import markupsafe\n\ndef test_bug():\n    assert markupsafe.Markup(\"<!--\\n<br\\n>\\n-->\").striptags() == \"\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert markupsafe.Markup(\"<!--\\n<br\\n>\\n-->\").striptags() == \"\"\nE   AssertionError: assert '<!-- <br > -->' == ''\nE     \nE     + <!-- <br > -->\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '<!-- <br > -->' == ''\n1 failed in 0.36s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.27s\n"
+    }
+  ]
+}

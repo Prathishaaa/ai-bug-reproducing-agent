@@ -1,0 +1,24 @@
+{
+  "bug": "A10",
+  "issue": "https://github.com/pallets/flask/issues/5258",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "src/flask/helpers.py",
+    "src/flask/sansio/app.py",
+    "src/flask/app.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 22,
+  "tries": [
+    {
+      "guess": "Calling flask.url_for with a keyword argument named 'self' conflicts with the 'self' parameter of the Flask.url_for method signature.",
+      "test_code": "from flask import Flask, url_for\n\ndef test_bug():\n    app = Flask(__name__)\n    @app.route(\"/\")\n    def index():\n        return \"\"\n        \n    with app.test_request_context():\n        url = url_for(\"index\", self=1)\n        assert \"?self=1\" in url\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    url = url_for(\"index\", self=1)\nsrc/flask/helpers.py:222: in url_for\n    return current_app.url_for(\nE   TypeError: Flask.url_for() got multiple values for argument 'self'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: Flask.url_for() got multiple values...\n1 failed in 1.37s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.90s\n"
+    }
+  ]
+}

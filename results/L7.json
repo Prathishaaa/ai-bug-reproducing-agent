@@ -8,15 +8,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 10,
+  "seconds": 15,
   "tries": [
     {
-      "guess": "`bucket` uses `validator or (lambda x: True)` to assign the default validator, which incorrectly treats any falsey callable validator (such as an empty set implementing `__call__`) as missing and replaces it with the default.",
-      "test_code": "from more_itertools import bucket\n\nclass AllowedKeys(set):\n    def __call__(self, key):\n        return key in self\n\ndef test_bug():\n    allowed = AllowedKeys()\n    source = iter([1, 2, 3])\n    buckets = bucket(source, key=lambda x: x, validator=allowed)\n    assert list(buckets[1]) == []\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert list(buckets[1]) == []\nE   assert [1] == []\nE     \nE     Left contains one more item: 1\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert [1] == []\n1 failed in 0.33s\n",
+      "guess": "`bucket` uses `validator or (lambda x: True)` to set the default validator, which incorrectly replaces a falsey custom validator (like an empty set callable) with the default one.",
+      "test_code": "from more_itertools import bucket\n\ndef test_bug():\n    class AllowedKeys(set):\n        def __call__(self, key):\n            return key in self\n\n    allowed = AllowedKeys()\n    source = iter([1, 2, 3])\n    buckets = bucket(source, key=lambda x: x, validator=allowed)\n    assert list(buckets[1]) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert list(buckets[1]) == []\nE   assert [1] == []\nE     \nE     Left contains one more item: 1\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert [1] == []\n1 failed in 0.39s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.23s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.34s\n"
     }
   ]
 }
