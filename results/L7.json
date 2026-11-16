@@ -1,19 +1,22 @@
 {
   "bug": "L7",
+  "issue": "https://github.com/more-itertools/more-itertools/issues/1308",
   "error_to_find": "AssertionError",
   "files_picked": [
     "more_itertools/more.py"
   ],
   "status": "reproduced",
   "verified_with_fix": true,
-  "seconds": 29,
+  "error_changes": [],
+  "seconds": 10,
   "tries": [
     {
-      "guess": "bucket() evaluates 'validator or (lambda x: True)', which incorrectly replaces a falsey validator callable with the default validator.",
+      "guess": "`bucket` uses `validator or (lambda x: True)` to assign the default validator, which incorrectly treats any falsey callable validator (such as an empty set implementing `__call__`) as missing and replaces it with the default.",
       "test_code": "from more_itertools import bucket\n\nclass AllowedKeys(set):\n    def __call__(self, key):\n        return key in self\n\ndef test_bug():\n    allowed = AllowedKeys()\n    source = iter([1, 2, 3])\n    buckets = bucket(source, key=lambda x: x, validator=allowed)\n    assert list(buckets[1]) == []\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert list(buckets[1]) == []\nE   assert [1] == []\nE     \nE     Left contains one more item: 1\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert [1] == []\n1 failed in 0.70s\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert list(buckets[1]) == []\nE   assert [1] == []\nE     \nE     Left contains one more item: 1\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert [1] == []\n1 failed in 0.33s\n",
       "match": true,
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.56s\n"
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.23s\n"
     }
   ]
 }

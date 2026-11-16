@@ -27,12 +27,26 @@ Rules for test_code:
 """
 
 
-def write_test_prompt(issue, code, history):
+# Added after 2 passed tests in a row: maybe the report itself is wrong or out of date.
+REPORT_MAY_BE_WRONG = """
+Your last 2 tests PASSED, so the bug report may be wrong or out of date.
+Read the code and find what really goes wrong for the case in the report.
+Do not only check that it does not crash. Check that the exact result is correct,
+for example: assert the output equals what a user would expect.
+If the real problem is a different error, add it to your JSON, like this:
+{"guess": "...", "test_code": "...", "error_type": "AssertionError"}
+"""
+
+
+def write_test_prompt(issue, code, history, report_may_be_wrong=False):
     # Join question 2, the bug report and the picked files into one message.
     text = WRITE_TEST + "\nBug report:\n" + issue + "\n\nCode:\n" + code
-    # From try 2 on, add what went wrong before, so Gemini can do better.
+    # From try 2 on, add what went wrong before and WHY, so Gemini tries a new idea.
     if history:
-        text += "\n\nThese earlier tries did not work. Try a different cause or a different test.\n"
+        text += "\n\nThese earlier tries did not work. Use a NEW idea, not the same one again.\n"
         for number, old in enumerate(history, start=1):
-            text += f"\nTry {number}, guess: {old['guess']}\nWhat the test printed:\n{old['output'][-2000:]}\n"
+            text += f"\nTry {number}, guess: {old['guess']}\nWhy it did not work: {old['reason']}\n"
+            text += f"What the test printed:\n{old['output'][-2000:]}\n"
+    if report_may_be_wrong:
+        text += REPORT_MAY_BE_WRONG
     return text

@@ -21,3 +21,19 @@ def is_match(output, error_type):
     in_project = len(project_files) > 0 or error_type == "AssertionError"
 
     return ran and same_error and in_project
+
+
+def why_no_match(output, error_type):
+    # Turn a failed try into one plain sentence, so Gemini knows WHY it did not work.
+    last_line = output.strip().splitlines()[-1] if output.strip() else ""
+    if output.startswith("Not valid JSON"):
+        return "Your answer was not valid JSON. Reply with only the JSON."
+    if "passed" in last_line and "failed" not in last_line:
+        return "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    if "FAILED test_bug.py" not in output:
+        return "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    errors = re.findall(r"^E   (\w+)", output, re.MULTILINE)
+    found = "AssertionError" if errors and errors[0] == "assert" else (errors[0] if errors else "an unknown error")
+    if found == error_type:
+        return "It failed with the right error, but not inside the project's code. Call the project's code."
+    return f"It failed with {found}, but the bug is {error_type}. Look for a different cause."

@@ -1,5 +1,6 @@
 {
   "bug": "L8",
+  "issue": "https://github.com/astanin/python-tabulate/issues/312",
   "error_to_find": "TypeError",
   "files_picked": [
     "tabulate/__init__.py",
@@ -8,31 +9,36 @@
   ],
   "status": "not reproduced",
   "verified_with_fix": null,
-  "seconds": 41,
+  "error_changes": [],
+  "seconds": 27,
   "tries": [
     {
-      "guess": "Using maxcolwidths on a table containing None values fails with a TypeError because NoneType cannot be passed to _type() inside _wrap_text_to_colwidths.",
-      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    result = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert result is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.44s\n",
-      "match": false
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid control character at: line 2 column 227 (char 227)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
     },
     {
-      "guess": "Using maxcolwidths on a table containing None values fails because _wrap_text_to_colwidths calls _type() on None, raising a TypeError since NoneType takes no arguments.",
-      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate.tabulate(table, headers=\"keys\", tablefmt=\"plain\", maxcolwidths=40)\n    assert res is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.30s\n",
-      "match": false
+      "guess": "When maxcolwidths is used, cells containing None values cause a TypeError in _wrap_text_to_colwidths because it attempts to call str() or check number properties on None without a guard.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.17s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "Using maxcolwidths on a table containing None values fails with TypeError because None is passed to str(cell) or _type() in _wrap_text_to_colwidths.",
-      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    result = tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert result is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
-      "match": false
+      "guess": "When maxcolwidths is used with a table containing None values, _wrap_text_to_colwidths attempts to invoke number parsing and string formatting on None, raising TypeError.",
+      "test_code": "import humanize\nfrom tabulate import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:1: in <module>\n    import humanize\nE   ModuleNotFoundError: No module named 'humanize'\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.25s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
     },
     {
-      "guess": "Using maxcolwidths on a table containing None values fails with TypeError because NoneType cannot be called in _wrap_text_to_colwidths when evaluating cell types.",
-      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
-      "match": false
+      "guess": "When maxcolwidths is used, cells containing None values cause a TypeError in _wrap_text_to_colwidths because it attempts to process None as a number or string.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.17s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     }
   ]
 }

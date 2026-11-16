@@ -1,5 +1,6 @@
 {
   "bug": "D1",
+  "issue": "https://github.com/pallets-eco/flask-sqlalchemy/issues/1201",
   "error_to_find": "AssertionError",
   "files_picked": [
     "src/flask_sqlalchemy/pagination.py",
@@ -8,14 +9,23 @@
   ],
   "status": "reproduced",
   "verified_with_fix": true,
-  "seconds": 20,
+  "error_changes": [],
+  "seconds": 17,
   "tries": [
     {
-      "guess": "Pagination.next() and Pagination.prev() do not pass max_per_page when instantiating the new Pagination object, causing it to fall back to the default max_per_page of 100.",
-      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\napp = Flask(__name__)\napp.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\ndb = SQLAlchemy(app)\n\nclass Todo(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n\ndef test_bug():\n    with app.app_context():\n        db.create_all()\n        for _ in range(150):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = Todo.query.paginate(per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 40\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:22: in test_bug\n    assert len(p2.items) == 40\nE   assert 50 == 40\nE    +  where 50 = len([<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...])\nE    +    where [<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...] = <flask_sqlalchemy.pagination.QueryPagination object at 0x796c35a09a90>.items\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 50 == 40\n1 failed in 2.60s\n",
+      "guess": "Pagination.next() and Pagination.prev() do not pass max_per_page to the new Pagination instance, causing per_page to fall back to the default max_per_page limit of 100.",
+      "test_code": "import pytest\nfrom flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\nfrom sqlalchemy import select\n\nclass Todo(db.Model := SQLAlchemy().Model):\n    id = db.Column(db.Integer, primary_key=True)\n\ndef test_bug():\n    app = Flask(__name__)\n    app.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\n    db.init_app(app)\n\n    with app.app_context():\n        db.create_all()\n        for _ in range(150):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = db.paginate(select(Todo), per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 40\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\n/usr/local/lib/python3.12/site-packages/_pytest/python.py:528: in importtestmodule\n    mod = import_path(\n/usr/local/lib/python3.12/site-packages/_pytest/pathlib.py:640: in import_path\n    importlib.import_module(module_name)\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n<frozen importlib._bootstrap>:1387: in _gcd_import\n    ???\n<frozen importlib._bootstrap>:1360: in _find_and_load\n    ???\n<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked\n    ???\n<frozen importlib._bootstrap>:935: in _load_unlocked\n    ???\n/usr/local/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:176: in exec_module\n    source_hash, co = _rewrite_test(fn, self.config)\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:339: in _rewrite_test\n    tree = ast.parse(source, filename=strfn)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/ast.py:52: in parse\n    return compile(source, filename, mode, flags,\nE     File \"/app/test_bug.py\", line 6\nE       class Todo(db.Model := SQLAlchemy().Model):\nE                           ^^\nE   SyntaxError: invalid syntax\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.36s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    },
+    {
+      "guess": "Pagination.next() and prev() methods do not pass max_per_page into the new Pagination instance, causing per_page to be capped at the default max_per_page (100).",
+      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\napp = Flask(__name__)\napp.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\ndb = SQLAlchemy(app)\n\nclass Todo(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n\ndef test_bug():\n    with app.app_context():\n        db.create_all()\n        for _ in range(250):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = Todo.query.paginate(per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 110\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:22: in test_bug\n    assert len(p2.items) == 110\nE   assert 100 == 110\nE    +  where 100 = len([<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...])\nE    +    where [<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...] = <flask_sqlalchemy.pagination.QueryPagination object at 0x72ce0895bc80>.items\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 100 == 110\n1 failed in 1.30s\n",
       "match": true,
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.77s\n"
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.79s\n"
     }
   ]
 }
