@@ -1,0 +1,31 @@
+{
+  "bug": "D2",
+  "issue": "https://github.com/piccolo-orm/piccolo/issues/1444",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "piccolo/columns/column_types.py",
+    "piccolo/query/functions/array.py",
+    "piccolo/apps/schema/commands/generate.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 35,
+  "tries": [
+    {
+      "guess": "Array column type creation in SQLite does not handle Numeric inner columns and convert_complex_array_out only converts strings, resulting in floats instead of Decimals.",
+      "test_code": "import pytest\nfrom decimal import Decimal\nfrom piccolo.table import Table\nfrom piccolo.columns.column_types import Array, Numeric\nfrom piccolo.engine.sqlite import SQLiteEngine\n\n\n@pytest.mark.asyncio\nasync def test_bug():\n    engine = SQLiteEngine(\":memory:\")\n\n    class Prices(Table, db=engine):\n        values = Array(Numeric(digits=(5, 2)))\n\n    await Prices.create_table().run()\n\n    await Prices({Prices.values: [Decimal(\"0.1\")]}).save()\n    row = await Prices.select(Prices.values).first()\n    \n    assert isinstance(row[\"values\"][0], Decimal)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\nasync def functions are not natively supported.\nYou need to install a suitable plugin for your async framework, for example:\n  - anyio\n  - pytest-asyncio\n  - pytest-tornasync\n  - pytest-trio\n  - pytest-twisted\n=============================== warnings summary ===============================\ntest_bug.py:8\n  /app/test_bug.py:8: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html\n    @pytest.mark.asyncio\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: async def functions are not natively s...\n1 failed, 1 warning in 2.33s\n",
+      "match": false,
+      "reason": "It failed with an unknown error, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "Array with a Numeric inner column returns floats instead of Decimals in SQLite because convert_complex_array_out doesn't handle decimals and column_type doesn't recognize Numeric for SQLite.",
+      "test_code": "import pytest\nfrom decimal import Decimal\nfrom piccolo.table import Table\nfrom piccolo.columns.column_types import Array, Numeric\nfrom piccolo.columns.base import OnDelete\n\nclass Prices(Table, tablename=\"prices\"):\n    values = Array(Numeric(digits=(5, 2)))\n\n@pytest.mark.anyio\nasync def test_bug():\n    await Prices.create_table(if_not_exists=True)\n    try:\n        await Prices({Prices.values: [Decimal(\"0.1\")]}).save()\n        row = await Prices.select(Prices.values).first()\n        assert isinstance(row[\"values\"][0], Decimal)\n    finally:\n        await Prices.remove_table()\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________________________ test_bug[asyncio] _______________________________\ntest_bug.py:16: in test_bug\n    assert isinstance(row[\"values\"][0], Decimal)\nE   assert False\nE    +  where False = isinstance(0.1, Decimal)\n\nDuring handling of the above exception, another exception occurred:\ntest_bug.py:18: in test_bug\n    await Prices.remove_table()\n          ^^^^^^^^^^^^^^^^^^^\nE   AttributeError: type object 'Prices' has no attribute 'remove_table'. Did you mean: 'create_table'?\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug[asyncio] - AttributeError: type object 'Prices' ...\n1 failed in 4.67s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________________________ test_bug[asyncio] _______________________________\ntest_bug.py:16: in test_bug\n    assert isinstance(row[\"values\"][0], Decimal)\nE   assert False\nE    +  where False = isinstance(0.1, Decimal)\n\nDuring handling of the above exception, another exception occurred:\ntest_bug.py:18: in test_bug\n    await Prices.remove_table()\n          ^^^^^^^^^^^^^^^^^^^\nE   AttributeError: type object 'Prices' has no attribute 'remove_table'. Did you mean: 'create_table'?\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug[asyncio] - AttributeError: type object 'Prices' ...\n1 failed in 3.55s\n"
+    }
+  ]
+}

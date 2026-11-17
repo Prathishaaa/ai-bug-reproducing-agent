@@ -1,0 +1,24 @@
+{
+  "bug": "D3",
+  "issue": "https://github.com/piccolo-orm/piccolo/issues/1127",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "piccolo/columns/column_types.py",
+    "piccolo/apps/schema/commands/generate.py",
+    "piccolo/columns/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 35,
+  "tries": [
+    {
+      "guess": "SQLite Engine passes large integers as standard floats or gets rounded due to parameter binding or parsing issues in standard sqlite3/aiosqlite integration, or Python integers losing precision when coerced.",
+      "test_code": "import asyncio\nfrom pathlib import Path\nfrom piccolo.columns import BigInt, Integer\nfrom piccolo.engine.sqlite import SQLiteEngine\nfrom piccolo.table import Table\n\nroot = Path(__file__).parent\ndb_path = root / \"test_db.sqlite\"\n\nif db_path.exists():\n    db_path.unlink()\n\nDB = SQLiteEngine(path=str(db_path))\n\nclass SomeTable(Table, db=DB):\n    num1 = BigInt()\n    num2 = Integer()\n\nasync def run_test():\n    await SomeTable.create_table()\n    guild_id = 625757527765811240\n    guild = SomeTable(num1=guild_id, num2=guild_id)\n    await guild.save()\n    res = await SomeTable.select().first()\n    await SomeTable.delete(force=True)\n    \n    assert res[\"num1\"] == guild_id\n    assert res[\"num2\"] == guild_id\n\ndef test_bug():\n    asyncio.run(run_test())",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:31: in test_bug\n    asyncio.run(run_test())\n/usr/local/lib/python3.12/asyncio/runners.py:195: in run\n    return runner.run(main)\n           ^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/base_events.py:691: in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\ntest_bug.py:27: in run_test\n    assert res[\"num1\"] == guild_id\nE   assert 625757527765811200 == 625757527765811240\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/pytest_cov/plugin.py:136\n  /usr/local/lib/python3.12/site-packages/pytest_cov/plugin.py:136: PytestRemovedIn10Warning: The hookimpl pytest_load_initial_conftests uses old-style configuration options (marks or attributes).\n  Please use the pytest.hookimpl(tryfirst=True) decorator instead\n   to configure the hooks.\n   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers\n    @pytest.mark.tryfirst\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 625757527765811200 == 625757527765811240\n1 failed, 1 warning in 3.48s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n=============================== warnings summary ===============================\n../usr/local/lib/python3.12/site-packages/pytest_cov/plugin.py:136\n  /usr/local/lib/python3.12/site-packages/pytest_cov/plugin.py:136: PytestRemovedIn10Warning: The hookimpl pytest_load_initial_conftests uses old-style configuration options (marks or attributes).\n  Please use the pytest.hookimpl(tryfirst=True) decorator instead\n   to configure the hooks.\n   See https://docs.pytest.org/en/latest/deprecations.html#configuring-hook-specs-impls-using-markers\n    @pytest.mark.tryfirst\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1 passed, 1 warning in 2.27s\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "bug": "D4",
+  "issue": "https://github.com/tortoise/tortoise-orm/issues/2296",
+  "error_to_find": "sqlite3.ProgrammingError",
+  "files_picked": [
+    "tortoise/fields/data.py",
+    "tortoise/models.py",
+    "tortoise/queryset.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 143,
+  "tries": [
+    {
+      "guess": "SQLite backend does not register a binding adapter for datetime.time, causing sqlite3.ProgrammingError when persisting TimeField values.",
+      "test_code": "from datetime import time\nimport pytest\nfrom tortoise import Tortoise, fields\nfrom tortoise.models import Model\n\nclass Clock(Model):\n    id = fields.IntField(primary_key=True)\n    value = fields.TimeField()\n\n@pytest.mark.anyio\nasync def test_bug():\n    await Tortoise.init(db_url=\"sqlite://:memory:\", modules={\"models\": [__name__]})\n    await Tortoise.generate_schemas()\n    await Clock.create(value=time(12, 34, 56))\n    clock = await Clock.first()\n    assert clock.value == time(12, 34, 56)\n    await Tortoise.close_connections()\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________________________ test_bug[asyncio] _______________________________\ntest_bug.py:14: in test_bug\n    await Clock.create(value=time(12, 34, 56))\ntortoise/models.py:1408: in create\n    await instance.save(using_db=db, force_create=True)\ntortoise/models.py:1178: in save\n    await executor.execute_insert(self)\ntortoise/backends/base/executor.py:342: in execute_insert\n    insert_result = await self.db.execute_insert(self.insert_query, values)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntortoise/backends/sqlite/client.py:42: in translate_exceptions_\n    return await func(self, query, *args)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntortoise/backends/sqlite/client.py:131: in execute_insert\n    return (await connection.execute_insert(query, values))[0]\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/site-packages/aiosqlite/core.py:233: in execute_insert\n    return await self._execute(self._execute_insert, sql, parameters)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/site-packages/aiosqlite/core.py:160: in _execute\n    return await future\n           ^^^^^^^^^^^^\n/usr/local/lib/python3.12/site-packages/aiosqlite/core.py:63: in _connection_worker_thread\n    result = function()\n             ^^^^^^^^^^\n/usr/local/lib/python3.12/site-packages/aiosqlite/core.py:142: in _execute_insert\n    cursor = self._conn.execute(sql, parameters)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   sqlite3.ProgrammingError: Error binding parameter 1: type 'datetime.time' is not supported\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug[asyncio] - sqlite3.ProgrammingError: Error bindi...\n1 failed in 1.23s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________________________ test_bug[asyncio] _______________________________\ntest_bug.py:16: in test_bug\n    assert clock.value == time(12, 34, 56)\nE   assert datetime.time(12, 34, 56, tzinfo=datetime.timezone.utc) == datetime.time(12, 34, 56)\nE    +  where datetime.time(12, 34, 56, tzinfo=datetime.timezone.utc) = <Clock: 1>.value\nE    +  and   datetime.time(12, 34, 56) = time(12, 34, 56)\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug[asyncio] - assert datetime.time(12, 34, 56, tzin...\n1 failed in 0.76s\n"
+    }
+  ]
+}

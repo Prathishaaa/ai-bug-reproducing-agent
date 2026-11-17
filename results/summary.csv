@@ -17,5 +17,8 @@ A5,api,yes,1,166
 A7,api,no,4,211
 A10,api,yes,1,59
 D1,db,yes,1,77
+D2,db,no,2,35
+D3,db,yes,1,35
+D4,db,no,1,143
 H1,freeze,no,4,83
 H2,freeze,yes,1,91
