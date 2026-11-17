@@ -11,7 +11,7 @@ INSTALL = (
     f"for f in requirements/test*.txt requirements-test*.txt test-requirements.txt requirements/dev.txt; "
     f"do [ -f $f ] && {PIP} -r $f; done; "
     f"for g in test tests dev; do {PIP} --group $g 2>/dev/null; done; "
-    f"{PIP} -U pytest; exit 0"  # those lists can bring an old pytest that breaks on Python 3.12
+    f"{PIP} -U pytest pytest-timeout; exit 0"  # those lists can bring an old pytest that breaks on Python 3.12
 )
 
 
@@ -46,7 +46,10 @@ def run_test(folder, bug_id, test_file="test_bug.py"):
         "docker", "run", "--rm", "--network", "none", "--memory", "512m",
         "-v", os.path.abspath(folder) + ":/app", "-w", "/app",
         prepare_box(folder, bug_id),
-        "timeout", "60", "pytest", "-q", "--color=no", "--tb=short", "-p", "no:cacheprovider", test_file,
+        # --timeout=20 stops a frozen test after 20 seconds and shows where it was stuck.
+        # The outer "timeout 60" is a backup in case even that does not work.
+        "timeout", "60", "pytest", "-q", "--color=no", "--tb=short", "-p", "no:cacheprovider",
+        "--timeout=20", test_file,
     ]
     result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     return result.stdout + result.stderr

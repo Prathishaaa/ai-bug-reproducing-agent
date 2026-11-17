@@ -1,0 +1,11 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________________ test_bug ___________________________________
+test_bug.py:2: in test_bug
+    while True:
+          ^^^^
+E   Failed: Timeout (>20.0s) from pytest-timeout.
+=========================== short test summary info ============================
+FAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.
+1 failed in 20.16s
+

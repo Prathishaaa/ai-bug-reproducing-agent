@@ -1,0 +1,44 @@
+{
+  "bug": "H1",
+  "issue": "https://github.com/Python-Markdown/markdown/issues/1586",
+  "error_to_find": "Timeout",
+  "files_picked": [
+    "markdown/core.py",
+    "markdown/extensions/md_in_html.py",
+    "markdown/inlinepatterns.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 44,
+  "tries": [
+    {
+      "guess": "HTML comment regex in inline patterns incorrectly matches nested or conditional comments like <!--[if mso]> leading to an infinite loop.",
+      "test_code": "import markdown\n\n\ndef test_bug():\n    input_string = '''<!--[if mso]>test<![endif]-->'''\n    result = markdown.markdown(input_string)\n    assert result is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.82s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "The HTML comment regular expression in inlinepatterns fails to properly parse conditional comments like <!--[if mso]> containing dashes or brackets, causing a matching loop.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]> <p>test</p> <![endif]-->'\n    markdown.markdown(input_string)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.65s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "HTML comments or conditional comments inside raw HTML blocks can cause the HTMLExtractor parser to loop or fail parsing when encountered without proper handling.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '''## **HTML Conditional Statements: A Dual-Edged Sword**\n\nUpon closer examination of the email's HTML code, it became evident that the threat actors leveraged HTML conditional comments, specifically `<!--[if mso]>` and `<!--[if !mso]>`'''\n    result = markdown.markdown(input_string)\n    assert result is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.56s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Markdown.markdown with HTML conditional comments like `<!--[if mso]>` causes an infinite loop in the HTML comment / declaration parser due to Python's XML/HTML parser behavior on conditional comments under python < 3.13 or related parser fallback loops.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]>test<![endif]-->'\n    res = markdown.markdown(input_string)\n    assert res == '<!--[if mso]>test<![endif]-->'",
+      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

@@ -27,6 +27,16 @@ def test_wrong_answer_bug():
     assert is_match(read("wrong_answer"), "AssertionError")
 
 
+def test_freeze_bug():
+    # The test froze inside the project's code (more_itertools/more.py), so it counts.
+    assert is_match(read("freeze"), "Timeout")
+
+
+def test_freeze_cheating_test():
+    # The test froze in its own "while True" loop and never used the project.
+    assert not is_match(read("freeze_cheating"), "Timeout")
+
+
 def test_cheating_test():
     # The test raised OverflowError itself and never used humanize.
     assert not is_match(read("cheating"), "OverflowError")

@@ -1,0 +1,14 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________________________ test_bug ___________________________________
+test_bug.py:5: in test_bug
+    more_itertools.consume(more_itertools.iterate(int, 1))
+more_itertools/recipes.py:200: in consume
+    deque(iterator, maxlen=0)
+more_itertools/more.py:562: in iterate
+    yield start
+E   Failed: Timeout (>20.0s) from pytest-timeout.
+=========================== short test summary info ============================
+FAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.
+1 failed in 20.43s
+

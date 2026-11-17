@@ -6,6 +6,7 @@ Read the bug report below. Reply with only JSON, nothing else, like this:
 {"error_type": "OverflowError", "keywords": ["word1", "word2"], "file_names": ["file.py"]}
 
 error_type: the Python error the bug causes. If it gives a wrong result instead, use AssertionError.
+If it freezes or never finishes, use Timeout.
 keywords: 2 to 5 function or variable names to search the code for.
 file_names: any .py files the report mentions, or an empty list.
 
@@ -24,6 +25,7 @@ Rules for test_code:
 - Import the project the way a user would, for example "import humanize".
 - Call the project's own code. Never raise the error yourself.
 - No internet, no extra packages. Keep it short.
+- For a freeze bug, just call the code that freezes. The room stops it after 20 seconds.
 """
 
 
