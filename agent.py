@@ -4,7 +4,7 @@ import sys
 import time
 
 from check import is_match, why_no_match
-from docker_run import run_test
+from docker_run import prepare_box, run_test
 from download import get_bug, get_code, get_issue
 from llm import ask_json
 from pick_files import pick_files, read_bug
@@ -47,6 +47,8 @@ def reproduce(bug_text):
     print("1. Getting the code and the bug report")
     get_code(bug, folder)
     get_issue(bug, folder)
+    # Set up the room once. A few old bugs need packages from their own date (package_date in bugs.csv).
+    prepare_box(folder, bug_id, bug.get("package_date", ""))
 
     print("2. Gemini reads the bug")
     info = read_bug(folder)

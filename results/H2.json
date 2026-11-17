@@ -10,15 +10,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 30,
+  "seconds": 91,
   "tries": [
     {
-      "guess": "Handling unclosed comments by resetting parsing position to 0 via updatepos causes an infinite loop when multiple `</` sequences are present.",
+      "guess": "A comment parsing workaround rewinds the parser to the start of the buffer when encountering unclosed comments, causing an infinite loop when multiple bogus comment triggers (`</`) are present.",
       "test_code": "import markdown\n\ndef test_bug():\n    markdown.markdown(\"`</` and `</`\")\n    markdown.markdown(\"<!-- <!--\")\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    markdown.markdown(\"`</` and `</`\")\nmarkdown/core.py:482: in markdown\n    return md.convert(text)\n           ^^^^^^^^^^^^^^^^\nmarkdown/core.py:354: in convert\n    self.lines = prep.run(self.lines)\n                 ^^^^^^^^^^^^^^^^^^^^\nmarkdown/preprocessors.py:90: in run\n    parser.close()\nmarkdown/htmlparser.py:132: in close\n    super().close()\n/usr/local/lib/python3.12/html/parser.py:182: in close\n    self.goahead(1)\n/usr/local/lib/python3.12/html/parser.py:258: in goahead\n    if startswith('<', i):\n       ^^^^^^^^^^^^^^^^^^\nE   Failed: Timeout (>20.0s) from pytest-timeout.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.\n1 failed in 20.86s\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    markdown.markdown(\"`</` and `</`\")\nmarkdown/core.py:482: in markdown\n    return md.convert(text)\n           ^^^^^^^^^^^^^^^^\nmarkdown/core.py:354: in convert\n    self.lines = prep.run(self.lines)\n                 ^^^^^^^^^^^^^^^^^^^^\nmarkdown/preprocessors.py:90: in run\n    parser.close()\nmarkdown/htmlparser.py:132: in close\n    super().close()\n/usr/local/lib/python3.12/html/parser.py:182: in close\n    self.goahead(1)\n/usr/local/lib/python3.12/html/parser.py:245: in goahead\n    j = match.start()\n        ^^^^^^^^^^^^^\nE   Failed: Timeout (>20.0s) from pytest-timeout.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.\n1 failed in 20.70s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.44s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.34s\n"
     }
   ]
 }

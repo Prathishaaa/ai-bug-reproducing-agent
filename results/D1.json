@@ -10,15 +10,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 15,
+  "seconds": 77,
   "tries": [
     {
-      "guess": "The next() and prev() methods of Pagination do not pass max_per_page to the new Pagination instance, causing per_page to fall back to the default max of 100 when a value greater than 100 was used.",
-      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\n\ndef test_bug():\n    app = Flask(__name__)\n    app.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\n    db = SQLAlchemy(app)\n\n    class Todo(db.Model):\n        id = db.Column(db.Integer, primary_key=True)\n\n    with app.app_context():\n        db.create_all()\n        for _ in range(250):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = Todo.query.paginate(per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 110\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:23: in test_bug\n    assert len(p2.items) == 110\nE   assert 100 == 110\nE    +  where 100 = len([<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...])\nE    +    where [<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...] = <flask_sqlalchemy.pagination.QueryPagination object at 0x744d94803860>.items\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 100 == 110\n1 failed in 1.17s\n",
+      "guess": "Pagination.next() does not pass max_per_page to the new Pagination instance, causing per_page to be capped at the default max_per_page (100).",
+      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\ndef test_bug():\n    app = Flask(__name__)\n    app.config[\"SQLALCHEMY_DATABASE_URI\"] = \"sqlite:///:memory:\"\n    db = SQLAlchemy(app)\n\n    class Todo(db.Model):\n        id = db.Column(db.Integer, primary_key=True)\n\n    with app.app_context():\n        db.create_all()\n        for _ in range(250):\n            db.session.add(Todo())\n        db.session.commit()\n\n        p = Todo.query.paginate(per_page=110, max_per_page=200)\n        assert len(p.items) == 110\n\n        p2 = p.next()\n        assert len(p2.items) == 110\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:22: in test_bug\n    assert len(p2.items) == 110\nE   assert 100 == 110\nE    +  where 100 = len([<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...])\nE    +    where [<Todo 101>, <Todo 102>, <Todo 103>, <Todo 104>, <Todo 105>, <Todo 106>, ...] = <flask_sqlalchemy.pagination.QueryPagination object at 0x727cb9d3b530>.items\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 100 == 110\n1 failed in 1.24s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.78s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.00s\n"
     }
   ]
 }

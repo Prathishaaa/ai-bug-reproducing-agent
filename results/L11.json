@@ -1,0 +1,24 @@
+{
+  "bug": "L11",
+  "issue": "https://github.com/pallets/markupsafe/issues/417",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/markupsafe/__init__.py",
+    "src/markupsafe/_native.py",
+    "setup.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 17,
+  "tries": [
+    {
+      "guess": "Markup.striptags replaces HTML comments with a space instead of removing them entirely because of how string slicing is done or because whitespace normalization collapses the surrounding text.",
+      "test_code": "from markupsafe import Markup\n\ndef test_bug():\n    value = 'x <!-- comment -->'\n    assert Markup(value).striptags() == 'x'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert Markup(value).striptags() == 'x'\nE   AssertionError: assert 'x ' == 'x'\nE     \nE     - x\nE     + x\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'x ' == 'x'\n1 failed in 0.34s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.24s\n"
+    }
+  ]
+}

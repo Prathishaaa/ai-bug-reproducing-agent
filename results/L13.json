@@ -8,15 +8,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 16,
+  "seconds": 58,
   "tries": [
     {
-      "guess": "The engine.number_to_words method attempts to index beyond the end of the `mill` table when given numbers with magnitude >= 12, causing an IndexError instead of raising the documented NumOutOfRangeError.",
-      "test_code": "import pytest\nimport inflect\n\n\ndef test_bug():\n    p = inflect.engine()\n    with pytest.raises(inflect.NumOutOfRangeError):\n        p.number_to_words(10 ** 40)\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    p.number_to_words(10 ** 40)\ninflect/__init__.py:3913: in number_to_words\n    chunks[loopstart:] = map(_handle_chunk, chunks[loopstart:])\n    ^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3895: in _handle_chunk\n    chunk = self.enword(chunk, group)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3789: in enword\n    num = TWO_DIGITS_WORD.sub(self.tensub, num, 1)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3759: in tensub\n    return f\"{self.tenfn(int(mo.group(1)), int(mo.group(2)), self.mill_count)}, \"\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3694: in tenfn\n    return f\"{teen[units]}{mill[mindex]}\"\n                           ^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 2.32s\n",
+      "guess": "Calling number_to_words with an extremely large number exceeding the length of the `mill` table causes an IndexError in millfn because `ind > len(mill) - 1` raises NumOutOfRangeError only if checked properly, but the caller passes indices exceeding the table size.",
+      "test_code": "import pytest\nimport inflect\n\ndef test_bug():\n    p = inflect.engine()\n    with pytest.raises(inflect.NumOutOfRangeError):\n        p.number_to_words(10**40)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    p.number_to_words(10**40)\ninflect/__init__.py:3913: in number_to_words\n    chunks[loopstart:] = map(_handle_chunk, chunks[loopstart:])\n    ^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3895: in _handle_chunk\n    chunk = self.enword(chunk, group)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3789: in enword\n    num = TWO_DIGITS_WORD.sub(self.tensub, num, 1)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3759: in tensub\n    return f\"{self.tenfn(int(mo.group(1)), int(mo.group(2)), self.mill_count)}, \"\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:3694: in tenfn\n    return f\"{teen[units]}{mill[mindex]}\"\n                           ^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 2.52s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 2.14s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 2.63s\n"
     }
   ]
 }

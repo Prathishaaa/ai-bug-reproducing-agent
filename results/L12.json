@@ -3,22 +3,22 @@
   "issue": "https://github.com/pallets/click/issues/3487",
   "error_to_find": "TypeError",
   "files_picked": [
-    "src/click/termui.py",
     "src/click/testing.py",
-    "src/click/core.py"
+    "src/click/utils.py",
+    "src/click/termui.py"
   ],
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 16,
+  "seconds": 50,
   "tries": [
     {
-      "guess": "Echoing an empty byte string or bytearray with nl=True treats `out` as falsy and resets it to a string `\"\"` instead of bytes, causing a TypeError when added to `b\"\\n\"`.",
-      "test_code": "import io\nimport click\n\ndef test_bug():\n    f = io.BytesIO()\n    click.echo(b'', f, nl=True)\n    assert f.getvalue() == b'\\n'\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    click.echo(b'', f, nl=True)\nsrc/click/utils.py:333: in echo\n    file.write(out)  # type: ignore\n    ^^^^^^^^^^^^^^^\nE   TypeError: a bytes-like object is required, not 'str'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: a bytes-like object is required, no...\n1 failed in 0.88s\n",
+      "guess": "Echoing an empty bytes or bytearray object when nl=True evaluates to falsy, so 'out or \"\"' leaves it as bytes/bytearray instead of string \"\", causing a TypeError when trying to add a string \"\\n\" or when handling file writes incorrectly.",
+      "test_code": "import io\nimport click\n\ndef test_bug():\n    f = io.BytesIO()\n    click.echo(b'', f, nl=True)\n    assert f.getvalue() == b'\\n'\n\n    f2 = io.BytesIO()\n    click.echo(bytearray(), f2, nl=True)\n    assert f2.getvalue() == b'\\n'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    click.echo(b'', f, nl=True)\nsrc/click/utils.py:333: in echo\n    file.write(out)  # type: ignore\n    ^^^^^^^^^^^^^^^\nE   TypeError: a bytes-like object is required, not 'str'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: a bytes-like object is required, no...\n1 failed in 0.75s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.46s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.40s\n"
     }
   ]
 }

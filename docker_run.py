@@ -3,16 +3,19 @@ import os
 import subprocess
 import sys
 
-PIP = "pip install -q --root-user-action=ignore"
-# Install the project and its test packages. Unknown extras like [tests] are just skipped.
-# Then install test packages listed in other files or groups. If one of those fails, keep going.
-INSTALL = (
-    f"{PIP} -e .[test,tests,testing] || exit 1; "
-    f"for f in requirements/test*.txt requirements-test*.txt test-requirements.txt requirements/dev.txt; "
-    f"do [ -f $f ] && {PIP} -r $f; done; "
-    f"for g in test tests dev; do {PIP} --group $g 2>/dev/null; done; "
-    f"{PIP} -U pytest pytest-timeout; exit 0"  # those lists can bring an old pytest that breaks on Python 3.12
-)
+def install_command(date):
+    # With a date, pip installs packages as they were on that day, so new versions cannot break old code.
+    pip = "pip install -q --root-user-action=ignore"
+    dated = f"{pip} --uploaded-prior-to={date}T00:00:00Z" if date else pip
+    # Install the project and its test packages. Unknown extras like [tests] are just skipped.
+    # Then install test packages listed in other files or groups. If one of those fails, keep going.
+    return (
+        f"{dated} -e .[test,tests,testing] || exit 1; "
+        f"for f in requirements/test*.txt requirements-test*.txt test-requirements.txt requirements/dev.txt; "
+        f"do [ -f $f ] && {dated} -r $f; done; "
+        f"for g in test tests dev; do {dated} --group $g 2>/dev/null; done; "
+        f"{pip} -U pytest pytest-timeout; exit 0"  # always today's pytest: old ones break on Python 3.12
+    )
 
 
 def check_docker():
@@ -21,16 +24,21 @@ def check_docker():
         raise SystemExit("Docker is not running. Open Docker Desktop and try again.")
 
 
-def prepare_box(folder, bug_id):
+def prepare_box(folder, bug_id, date=""):
     # Set up a room for this bug once, WITH internet, then save it as a snapshot.
     image = "bug-box-" + bug_id.lower()
     if subprocess.run(["docker", "image", "inspect", image], capture_output=True).returncode == 0:
         return image  # already set up
     check_docker()
     name = image + "-setup"
-    subprocess.run(["docker", "rm", "-f", name], capture_output=True)
     mount = ["-v", os.path.abspath(folder) + ":/app", "-w", "/app"]
-    setup = subprocess.run(["docker", "run", "--name", name, *mount, "bug-box", "sh", "-c", INSTALL])
+    # Try packages from the bug's date first. If that fails (too old for Python 3.12), use today's.
+    for install_date in ([date, ""] if date else [""]):
+        subprocess.run(["docker", "rm", "-f", name], capture_output=True)
+        setup = subprocess.run(["docker", "run", "--name", name, *mount, "bug-box", "sh", "-c",
+                                install_command(install_date)])
+        if setup.returncode == 0:
+            break
     if setup.returncode != 0:
         subprocess.run(["docker", "rm", name], capture_output=True)
         raise RuntimeError("Could not set up this project in the room (pip install failed).")

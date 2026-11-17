@@ -9,15 +9,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 12,
+  "seconds": 30,
   "tries": [
     {
-      "guess": "ichunked calls islice(iterator, n - 1) without validating that n >= 1, causing a ValueError when n=0 or negative.",
-      "test_code": "from more_itertools import ichunked\n\n\ndef test_bug():\n    rows = [\"a\", \"b\", \"c\"]\n    chunks = [list(c) for c in ichunked(rows, 0)]\n    assert chunks == []\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    chunks = [list(c) for c in ichunked(rows, 0)]\n                               ^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:3723: in ichunked\n    rest = islice(iterator, n - 1)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nE   ValueError: Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: Stop argument for islice() must be...\n1 failed in 0.42s\n",
+      "guess": "ichunked calls islice with n - 1 even when n is 0 or negative, causing a ValueError from islice for non-empty iterables.",
+      "test_code": "from more_itertools import ichunked\n\ndef test_bug():\n    rows = [\"a\", \"b\", \"c\"]\n    assert list(list(c) for c in ichunked(rows, 0)) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert list(list(c) for c in ichunked(rows, 0)) == []\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:5: in <genexpr>\n    assert list(list(c) for c in ichunked(rows, 0)) == []\n                                 ^^^^^^^^^^^^^^^^^\nmore_itertools/more.py:3723: in ichunked\n    rest = islice(iterator, n - 1)\n           ^^^^^^^^^^^^^^^^^^^^^^^\nE   ValueError: Stop argument for islice() must be None or an integer: 0 <= x <= sys.maxsize.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: Stop argument for islice() must be...\n1 failed in 0.79s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.27s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.43s\n"
     }
   ]
 }

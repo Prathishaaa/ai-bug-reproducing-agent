@@ -9,15 +9,15 @@
   "status": "reproduced",
   "verified_with_fix": true,
   "error_changes": [],
-  "seconds": 11,
+  "seconds": 31,
   "tries": [
     {
-      "guess": "When a negative timedelta is passed to naturaldelta, _abs_timedelta is used to make it positive, but then days becomes 1 or greater due to how timedelta handles negative intervals or the days/seconds extraction logic fails to correctly account for the absolute value/sign.",
-      "test_code": "import datetime as dt\nfrom humanize import naturaldelta\n\ndef test_bug():\n    delta = dt.timedelta(seconds=-1)\n    assert naturaldelta(delta) == \"a second\"\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert naturaldelta(delta) == \"a second\"\nE   AssertionError: assert 'a day' == 'a second'\nE     \nE     - a second\nE     + a day\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'a day' == 'a second'\n1 failed in 0.42s\n",
+      "guess": "_abs_timedelta uses `now - (now + delta)` when delta.days < 0, but for zero or very small negative timedeltas (where days is 0, but seconds/microseconds are negative), delta.days is not less than 0, causing abs() on seconds and days to yield positive values incorrectly or fall into days==1 branches.",
+      "test_code": "import datetime as dt\nfrom humanize import naturaldelta\n\n\ndef test_bug():\n    delta = dt.timedelta(seconds=-1) + dt.timedelta(seconds=1)\n    # Or specifically a negative timedelta where days < 0 isn't triggered, or general negative delta:\n    delta = dt.timedelta(seconds=-5)\n    assert naturaldelta(delta) != \"a day\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    assert naturaldelta(delta) != \"a day\"\nE   AssertionError: assert 'a day' != 'a day'\nE    +  where 'a day' = naturaldelta(datetime.timedelta(days=-1, seconds=86395))\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'a day' != 'a day'\n1 failed in 0.40s\n",
       "match": true,
       "reason": "",
-      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.24s\n"
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.25s\n"
     }
   ]
 }

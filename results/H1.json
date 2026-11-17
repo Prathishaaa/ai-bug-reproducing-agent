@@ -3,42 +3,42 @@
   "issue": "https://github.com/Python-Markdown/markdown/issues/1586",
   "error_to_find": "Timeout",
   "files_picked": [
+    "markdown/inlinepatterns.py",
     "markdown/core.py",
-    "markdown/extensions/md_in_html.py",
-    "markdown/inlinepatterns.py"
+    "markdown/extensions/smarty.py"
   ],
   "status": "not reproduced",
   "verified_with_fix": null,
   "error_changes": [],
-  "seconds": 44,
+  "seconds": 83,
   "tries": [
     {
-      "guess": "HTML comment regex in inline patterns incorrectly matches nested or conditional comments like <!--[if mso]> leading to an infinite loop.",
-      "test_code": "import markdown\n\n\ndef test_bug():\n    input_string = '''<!--[if mso]>test<![endif]-->'''\n    result = markdown.markdown(input_string)\n    assert result is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.82s\n",
+      "guess": "The HTML comment regular expression in markdown/inlinepatterns.py allows an infinite loop when parsing malformed or unclosed HTML comments like `<!--` because the sub-pattern `(?:(?!<!--|-->).)*` can repeatedly match empty strings or fail to consume correctly.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]>'\n    markdown.markdown(input_string)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.40s\n",
       "match": false,
       "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "The HTML comment regular expression in inlinepatterns fails to properly parse conditional comments like <!--[if mso]> containing dashes or brackets, causing a matching loop.",
-      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]> <p>test</p> <![endif]-->'\n    markdown.markdown(input_string)\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.65s\n",
+      "guess": "The HTML_RE regular expression in markdown/inlinepatterns.py fails to match unclosed HTML comments starting with `<!--` that lack a closing `-->`, causing an infinite loop or excessive backtracking in the inline processor.",
+      "test_code": "import markdown\n\ndef test_bug():\n    content = \"<!--[if mso]>\"\n    markdown.markdown(content)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.30s\n",
       "match": false,
       "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "HTML comments or conditional comments inside raw HTML blocks can cause the HTMLExtractor parser to loop or fail parsing when encountered without proper handling.",
-      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '''## **HTML Conditional Statements: A Dual-Edged Sword**\n\nUpon closer examination of the email's HTML code, it became evident that the threat actors leveraged HTML conditional comments, specifically `<!--[if mso]>` and `<!--[if !mso]>`'''\n    result = markdown.markdown(input_string)\n    assert result is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.56s\n",
+      "guess": "The HTML comment regular expression fails to match HTML conditional comments like <!--[if mso]> because they contain brackets and attributes, leading to infinite loops when processed as inline patterns.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]>Test<![endif]-->'\n    res = markdown.markdown(input_string)\n    assert res == '<!--[if mso]>Test<![endif]-->'",
+      "output": ".                                                                        [100%]\n1 passed in 0.29s\n",
       "match": false,
       "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "Markdown.markdown with HTML conditional comments like `<!--[if mso]>` causes an infinite loop in the HTML comment / declaration parser due to Python's XML/HTML parser behavior on conditional comments under python < 3.13 or related parser fallback loops.",
-      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '<!--[if mso]>test<![endif]-->'\n    res = markdown.markdown(input_string)\n    assert res == '<!--[if mso]>test<![endif]-->'",
-      "output": ".                                                                        [100%]\n1 passed in 0.32s\n",
+      "guess": "Markdown.markdown enters an infinite loop when parsing specific HTML comments or structures containing `<!--` without proper matching or termination within `HtmlInlineProcessor`.",
+      "test_code": "import markdown\n\ndef test_bug():\n    input_string = '''## **HTML Conditional Statements: A Dual-Edged Sword**\n\nUpon closer examination of the email's HTML code, it became evident that the threat actors leveraged HTML conditional comments, specifically `<!--[if mso]>` and `<!--[if !mso]>`'''\n    result = markdown.markdown(input_string)\n    assert '<!--[if mso]>' in result\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    assert '<!--[if mso]>' in result\nE   assert '<!--[if mso]>' in \"<h2><strong>HTML Conditional Statements: A Dual-Edged Sword</strong></h2>\\n<p>Upon closer examination of the email's HTML code, it became evident that the threat actors leveraged HTML conditional comments, specifically `&lt;</p>\"\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert '<!--[if mso]>' in \"<h2><strong>HTML Co...\n1 failed in 0.46s\n",
       "match": false,
-      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+      "reason": "It failed with AssertionError, but the bug is Timeout. Look for a different cause."
     }
   ]
 }

@@ -10,35 +10,35 @@
   "status": "not reproduced",
   "verified_with_fix": null,
   "error_changes": [],
-  "seconds": 26,
+  "seconds": 54,
   "tries": [
     {
-      "guess": "Calling `str()` on `None` inside `_wrap_text_to_colwidths` via `_type(cell, numparse)(cell)` leads to a TypeError because `NoneType` takes no arguments.",
-      "test_code": "import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.22s\n",
+      "guess": "tabulate crashes with NoneType takes no arguments when maxcolwidths encounters a cell containing None because it attempts to call _type(cell, numparse)(cell) without checking if cell is None.",
+      "test_code": "import humanize\nfrom tabulate import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:1: in <module>\n    import humanize\nE   ModuleNotFoundError: No module named 'humanize'\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.43s\n",
       "match": false,
-      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
     },
     {
-      "guess": "When maxcolwidths is provided and a cell contains None, _wrap_text_to_colwidths calls _type(cell, numparse)(cell) which invokes type(None)(cell) resulting in a TypeError.",
+      "guess": "tabulate crashes with NoneType takes no arguments when maxcolwidths encounters a cell containing None because it tries to call _type(cell, numparse)(cell) on None.",
       "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.18s\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.26s\n",
       "match": false,
       "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "When using maxcolwidths with a table containing None values, tabulate raises TypeError because None cannot be passed to the type constructor.",
-      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", \"451.0\"], [\"sausages\", None]]\n    res = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert res is not None\n",
-      "output": ".                                                                        [100%]\n1 passed in 0.15s\n",
+      "guess": "tabulate crashes with NoneType takes no arguments when maxcolwidths encounters a cell containing None because it tries to call _type(cell, numparse)(cell) on None when a column has mixed types or non-numeric types containing None.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.17s\n",
       "match": false,
       "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     },
     {
-      "guess": "When maxcolwidths is used, tabulate calls `_type(cell, numparse)(cell)` on cells where `_isnumber(cell)` is False, causing a TypeError when `cell` is `None`.",
-      "test_code": "import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    result = tabulate.tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert 'None' not in result\n",
-      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert 'None' not in result\nE   AssertionError: assert 'None' not in '0         1...usages  None'\nE     \nE     'None' is contained here:\nE       \nE       sausages  None\nE     ?           ++++\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'None' not in '0       ...\n1 failed in 0.27s\n",
+      "guess": "tabulate crashes with TypeError when maxcolwidths is provided and a column contains a None value due to _wrap_text_to_colwidths calling _type and trying to instantiate NoneType.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0'], ['sausages', None]]\n    result = tabulate(table, headers='keys', tablefmt='plain', maxcolwidths=40)\n    assert result is not None\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.19s\n",
       "match": false,
-      "reason": "It failed with AssertionError, but the bug is TypeError. Look for a different cause."
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
     }
   ]
 }
