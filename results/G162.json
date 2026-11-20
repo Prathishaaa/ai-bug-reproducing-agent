@@ -1,0 +1,24 @@
+{
+  "bug": "G162",
+  "issue": "https://github.com/falconry/falcon/issues/2667",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "falcon/request.py",
+    "falcon/testing/helpers.py",
+    "falcon/testing/client.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 95,
+  "tries": [
+    {
+      "guess": "Request.root_path does not decode SCRIPT_NAME from latin1-tunneled utf8 bytes like PATH_INFO does.",
+      "test_code": "import falcon\nfrom falcon import testing\n\nclass Resource:\n    def on_get(self, req, resp):\n        resp.text = req.root_path\n\ndef test_bug():\n    app = falcon.App()\n    app.add_route('/test', Resource())\n    \n    # SCRIPT_NAME containing non-ASCII UTF-8 characters tunneled as latin-1\n    script_name = 'caf\u00e9'.encode('utf-8').decode('iso-8859-1')\n    \n    result = testing.simulate_get(app, '/test', root_path=script_name)\n    assert result.text == 'caf\u00e9'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:16: in test_bug\n    assert result.text == 'caf\u00c3\u00a9'\nE   AssertionError: assert '/caf\u00c3\u0192\u00c2\u00a9' == 'caf\u00c3\u00a9'\nE     \nE     - caf\u00c3\u00a9\nE     + /caf\u00c3\u0192\u00c2\u00a9\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '/caf\u00c3\u0192\u00c2\u00a9' == 'caf\u00c3\u00a9'\n1 failed in 2.19s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:16: in test_bug\n    assert result.text == 'caf\u00c3\u00a9'\nE   AssertionError: assert '/caf\u00c3\u00a9' == 'caf\u00c3\u00a9'\nE     \nE     - caf\u00c3\u00a9\nE     + /caf\u00c3\u00a9\nE     ? +\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '/caf\u00c3\u00a9' == 'caf\u00c3\u00a9'\n1 failed in 1.79s\n"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "bug": "G34",
+  "issue": "https://github.com/jaraco/inflect/issues/235",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "inflect/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 62,
+  "tries": [
+    {
+      "guess": "Words ending in 'ss' are matched by pl_sb_singular_s_endings, but singular_noun checks si_sb_singular_s_bysize which lacks 'ss' entries because pl_sb_singular_s_endings is not mapped to singular endings correctly.",
+      "test_code": "import inflect\n\n\ndef test_bug():\n    p = inflect.engine()\n    assert p.singular_noun(\"grass\") == \"gras\"\n",
+      "output": ".                                                                        [100%]\n1 passed in 2.82s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Words ending in 'ss' are classified under singular_s endings in plural forms, but their singular forms drop 'es' or fail because 'ss' is missing from the singular suffix list or matched incorrectly.",
+      "test_code": "import inflect\n\ndef test_bug():\n    p = inflect.engine()\n    assert p.singular_noun('grass') == 'gras'\n",
+      "output": ".                                                                        [100%]\n1 passed in 2.87s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid control character at: line 1 column 321 (char 320)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "Words ending in 'ss' such as 'grass' fail to singularize because 'ss' is missing from si_sb_singular_s_endings / si_sb_singular_s_complete, causing singular_noun to treat 'grass' as an uninflected singular noun rather than removing 'es' or recognizing it as a plural.",
+      "test_code": "import inflect\n\ndef test_bug():\n    p = inflect.engine()\n    assert p.singular_noun(\"grass\") == \"gras\" or p.singular_noun(\"grass\") == False\n    # Actually, grass is singular, so singular_noun('grass') should return False, but wait, report says singular_noun of 'grass' returns 'gras' because it mistakenly strips 's' from 'grass' thinking 'grass' is plural for 'gras' or similar.\n    assert p.singular_noun(\"grass\") is False\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    assert p.singular_noun(\"grass\") is False\nE   AssertionError: assert 'gras' is False\nE    +  where 'gras' = singular_noun('grass')\nE    +    where singular_noun = <inflect.engine object at 0x791ea4e557f0>.singular_noun\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'gras' is False\n1 failed in 2.58s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 3.26s\n"
+    }
+  ]
+}

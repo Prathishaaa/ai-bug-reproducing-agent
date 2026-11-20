@@ -1,0 +1,24 @@
+{
+  "bug": "G64",
+  "issue": "https://github.com/mahmoud/boltons/issues/479",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "boltons/fileutils.py",
+    "boltons/dictutils.py",
+    "boltons/iterutils.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 66,
+  "tries": [
+    {
+      "guess": "rotate_file removes the file at the keep limit instead of dropping files beyond keep, causing keep=1 to delete the newly rotated file.",
+      "test_code": "import os\nfrom boltons.fileutils import rotate_file\n\ndef test_bug(tmp_path):\n    p = tmp_path / \"f.txt\"\n    p.write_text(\"CRITICAL DATA\")\n    rotate_file(p, keep=1)\n    assert p.exists()\n    assert not (tmp_path / \"f.1.txt\").exists()\n\n    p2 = tmp_path / \"f2.txt\"\n    p2.write_text(\"current\")\n    for i in range(1, 6):\n        (tmp_path / f\"f2.{i}.txt\").write_text(f\"gen {i}\")\n    rotate_file(p2, keep=5)\n    assert (tmp_path / \"f2.5.txt\").exists()\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    assert p.exists()\nE   AssertionError: assert False\nE    +  where False = exists()\nE    +    where exists = PosixPath('/tmp/pytest-of-root/pytest-0/test_bug0/f.txt').exists\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert False\n1 failed in 0.26s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    assert p.exists()\nE   AssertionError: assert False\nE    +  where False = exists()\nE    +    where exists = PosixPath('/tmp/pytest-of-root/pytest-0/test_bug0/f.txt').exists\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert False\n1 failed in 0.28s\n"
+    }
+  ]
+}

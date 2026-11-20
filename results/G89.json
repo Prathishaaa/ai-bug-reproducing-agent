@@ -1,0 +1,44 @@
+{
+  "bug": "G89",
+  "issue": "https://github.com/jd/tenacity/issues/526",
+  "error_to_find": "OverflowError",
+  "files_picked": [
+    "tenacity/wait.py",
+    "tenacity/__init__.py",
+    "tenacity/asyncio/__init__.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 65,
+  "tries": [
+    {
+      "guess": "The exponential wait function computes 2^attempt_number every time instead of returning max directly when the previous wait time reached the maximum limit, leading to performance issues or OverflowError when attempt numbers get very large.",
+      "test_code": "import unittest.mock\nfrom tenacity import RetryCallState, wait_exponential\n\n\ndef test_bug():\n    wait_fn = wait_exponential(max=60)\n    \n    # Simulate a very large attempt number where 2^(attempt-1) would overflow or take long\n    rs1 = unittest.mock.Mock(spec=RetryCallState, attempt_number=1000)\n    val1 = wait_fn(rs1)\n    assert val1 == 60\n\n    # Test that subsequent large attempts return max directly without doing expensive computation\n    rs2 = unittest.mock.Mock(spec=RetryCallState, attempt_number=1001)\n    val2 = wait_fn(rs2)\n    assert val2 == 60\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.51s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "The wait_exponential function raises an OverflowError when the attempt number becomes extremely large, which should be caught or avoided by checking if the previous computed value or attempt number exceeds safe exponent limits.",
+      "test_code": "import unittest.mock\nfrom tenacity import RetryCallState, wait_exponential\n\n\ndef test_bug():\n    wait_strategy = wait_exponential(multiplier=1, max=60)\n    # Simulate an extremely large attempt number where 2 ** (attempt_number - 1) overflows\n    retry_state = unittest.mock.Mock(spec=RetryCallState)\n    retry_state.attempt_number = 1000000\n    # This should not raise an OverflowError or performance hang, but return max (60)\n    res = wait_strategy(retry_state)\n    assert res == 60\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.37s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Wait exponential calculation causes OverflowError or unnecessary large power computations for large attempt numbers.",
+      "test_code": "import unittest.mock\nfrom tenacity import RetryCallState, wait_exponential\n\n\ndef test_bug():\n    wait = wait_exponential(multiplier=1, max=60)\n    state = unittest.mock.Mock(spec=RetryCallState)\n    state.attempt_number = 1000\n    # For a high attempt number where 2^999 overflows or is extremely large,\n    # wait_exponential should cap at max (60) without raising OverflowError or hanging/taking too long.\n    res = wait(state)\n    assert res == 60\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.35s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "The wait_exponential calculation results in extremely large numbers or OverflowError for high attempt numbers, instead of simply returning max when the value hits or exceeds the max limit.",
+      "test_code": "import sys\nfrom tenacity import RetryCallState, Retrying, wait_exponential\n\nclass MockFuture:\n    failed = True\n    def exception(self):\n        return Exception(\"fail\")\n\ndef test_bug():\n    wait_fn = wait_exponential(max=60)\n    state = RetryCallState(Retrying(), None, (), {})\n    state.attempt_number = 1000000\n    # This should return max (60) quickly instead of doing 2^999999 calculation\n    val = wait_fn(state)\n    assert val == 60\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.30s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

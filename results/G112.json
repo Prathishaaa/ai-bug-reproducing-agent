@@ -1,0 +1,24 @@
+{
+  "bug": "G112",
+  "issue": "https://github.com/pallets/werkzeug/issues/3127",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/werkzeug/sansio/response.py",
+    "src/werkzeug/exceptions.py",
+    "src/werkzeug/datastructures/auth.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 96,
+  "tries": [
+    {
+      "guess": "WWWAuthenticate.to_header() appends a trailing space even when there are no parameters or token.",
+      "test_code": "from werkzeug.datastructures import WWWAuthenticate\n\n\ndef test_bug():\n    wa = WWWAuthenticate('bearer')\n    assert wa.to_header() == \"Bearer\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert wa.to_header() == \"Bearer\"\nE   AssertionError: assert 'Bearer ' == 'Bearer'\nE     \nE     - Bearer\nE     + Bearer \nE     ?       +\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'Bearer ' == 'Bearer'\n1 failed in 3.52s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.81s\n"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "bug": "G65",
+  "issue": "https://github.com/mahmoud/boltons/issues/261",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "boltons/funcutils.py",
+    "boltons/excutils.py",
+    "boltons/socketutils.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 48,
+  "tries": [
+    {
+      "guess": "FunctionBuilder's invocation string generator fails to properly handle or format keyword-only arguments when wrapping functions, causing TypeError when calling the wrapped function.",
+      "test_code": "import pytest\nfrom boltons.funcutils import wraps\n\ndef test_bug():\n    def g(a: float, b=10):\n        return a * b\n\n    def f(a: int, *, b=1):\n        return a * b\n\n    wrapped = wraps(g)(f)\n    assert wrapped(3) == 3\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:12: in test_bug\n    assert wrapped(3) == 3\nE   assert 30 == 3\nE    +  where 30 = <function g at 0x7c8cccbbe480>(3)\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 30 == 3\n1 failed in 0.28s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is TypeError. Look for a different cause."
+    },
+    {
+      "guess": "wraps(g)(f) fails because FunctionBuilder generates an invocation string that maps positional arguments to keyword arguments incorrectly or fails to handle keyword-only arguments properly during forwarding.",
+      "test_code": "from boltons.funcutils import wraps\n\ndef f(a: int, *, b=1):\n    return a * b\n\ndef g(a: float, b=10):\n    return a * b\n\ndef test_bug():\n    wrapped = wraps(g)(f)\n    assert wrapped(3) == 3\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert wrapped(3) == 3\nE   assert 30 == 3\nE    +  where 30 = <function g at 0x7dba9f949f80>(3)\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 30 == 3\n1 failed in 0.78s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is TypeError. Look for a different cause."
+    },
+    {
+      "guess": "wraps(g)(f) fails because FunctionBuilder.get_invocation_str() fails to forward keyword-only arguments of the wrapped function when building the invocation string.",
+      "test_code": "from boltons.funcutils import wraps\n\ndef test_bug():\n    def g(a: float, b=10):\n        return a * b\n\n    def f(a: int, *, b=1):\n        return a * b\n\n    wrapped = wraps(g)(f)\n    assert wrapped(3) == 3\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert wrapped(3) == 3\nE   assert 30 == 3\nE    +  where 30 = <function g at 0x75c78625e020>(3)\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 30 == 3\n1 failed in 0.28s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is TypeError. Look for a different cause."
+    },
+    {
+      "guess": "FunctionBuilder.get_invocation_str forwards regular arguments as keywords (name=name) causing a TypeError when wrapping a function with positional arguments into a function expecting positional or different parameters.",
+      "test_code": "from boltons.funcutils import wraps\n\ndef g(a: float, b=10):\n    return a * b\n\ndef f(a: int, *, b=1):\n    return a * b\n\ndef test_bug():\n    wrapped = wraps(g)(f)\n    wrapped(3)\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.22s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

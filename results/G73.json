@@ -1,0 +1,24 @@
+{
+  "bug": "G73",
+  "issue": "https://github.com/python-attrs/attrs/issues/1400",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "src/attr/_make.py",
+    "src/attr/_next_gen.py",
+    "src/attr/_funcs.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 44,
+  "tries": [
+    {
+      "guess": "attrs.fields expects a class as input and raises a TypeError when passed an attrs class instance.",
+      "test_code": "import attrs\n\n@attrs.define\nclass Hello:\n    a: int\n    b: int\n\ndef test_bug():\n    obj = Hello(1, 2)\n    assert attrs.fields(obj) == attrs.fields(Hello)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert attrs.fields(obj) == attrs.fields(Hello)\n           ^^^^^^^^^^^^^^^^^\nsrc/attr/_make.py:1918: in fields\n    raise TypeError(msg)\nE   TypeError: Passed object must be a class.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: Passed object must be a class.\n1 failed in 1.93s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.46s\n"
+    }
+  ]
+}

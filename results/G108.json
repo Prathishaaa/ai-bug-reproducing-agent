@@ -1,0 +1,31 @@
+{
+  "bug": "G108",
+  "issue": "https://github.com/pallets/werkzeug/issues/3291",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/werkzeug/wrappers/response.py",
+    "src/werkzeug/http.py",
+    "src/werkzeug/datastructures/range.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 64,
+  "tries": [
+    {
+      "guess": "make_conditional processes range requests before conditional requests and incorrectly fails multiple valid ranges.",
+      "test_code": "import pytest\nfrom werkzeug.wrappers import Response\n\n\ndef test_bug():\n    res = Response(\"Hello World\", status=200)\n    res.add_etag()\n    environ = {\n        \"REQUEST_METHOD\": \"GET\",\n        \"HTTP_RANGE\": \"bytes=0-4, 5-10\",\n    }\n    res.make_conditional(environ, accept_ranges=True, complete_length=11)\n    assert res.status_code in (200, 206)\n",
+      "output": ".                                                                        [100%]\n1 passed in 1.60s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "make_conditional ignores If-Unmodified-Since and fails to handle pre-condition precedence and status code returns correctly for mutating methods.",
+      "test_code": "import pytest\nfrom werkzeug.wrappers import Response\n\ndef test_bug():\n    res = Response(\"hello\", status=200)\n    res.headers[\"Last-Modified\"] = \"Wed, 21 Oct 2015 07:28:00 GMT\"\n    environ = {\n        \"REQUEST_METHOD\": \"POST\",\n        \"HTTP_IF_UNMODIFIED_SINCE\": \"Wed, 20 Oct 2015 07:28:00 GMT\",\n    }\n    res.make_conditional(environ)\n    assert res.status_code == 412\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:12: in test_bug\n    assert res.status_code == 412\nE   assert 200 == 412\nE    +  where 200 = <Response 5 bytes [200 OK]>.status_code\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 200 == 412\n1 failed in 1.72s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    res.make_conditional(environ)\nsrc/werkzeug/wrappers/response.py:806: in make_conditional\n    warnings.warn(\nE   DeprecationWarning: 'make_conditional' is deprecated and will be removed in Werkzeug 3.3. Use 'apply_conditions' and 'apply_range' instead.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - DeprecationWarning: 'make_conditional' is depr...\n1 failed in 2.00s\n"
+    }
+  ]
+}

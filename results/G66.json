@@ -1,0 +1,23 @@
+{
+  "bug": "G66",
+  "issue": "https://github.com/mahmoud/boltons/issues/439",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "boltons/setutils.py",
+    "boltons/queueutils.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 28,
+  "tries": [
+    {
+      "guess": "IndexedSet.difference_update and intersection_update call discard repeatedly, leading to quadratic scaling due to repeated compaction of dead intervals.",
+      "test_code": "import time\nfrom boltons.setutils import IndexedSet\n\n\ndef test_bug():\n    n = 20_000\n    s = IndexedSet(range(n))\n    to_remove = set(range(0, n, 2))\n    \n    t0 = time.perf_counter()\n    s.difference_update(to_remove)\n    duration = time.perf_counter() - t0\n    \n    # For 20,000 elements with quadratic behavior it takes > 20ms easily (often ~25ms+),\n    # whereas linear/optimized should take only a few milliseconds (< 5ms).\n    # We set a threshold to catch the quadratic regression.\n    assert duration < 0.015, f'difference_update too slow ({duration * 1000:.1f} ms), quadratic scaling bug present'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert duration < 0.015, f'difference_update too slow ({duration * 1000:.1f} ms), quadratic scaling bug present'\nE   AssertionError: difference_update too slow (90.0 ms), quadratic scaling bug present\nE   assert 0.08996103799998423 < 0.015\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: difference_update too slow (90...\n1 failed in 0.41s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert duration < 0.015, f'difference_update too slow ({duration * 1000:.1f} ms), quadratic scaling bug present'\nE   AssertionError: difference_update too slow (22.8 ms), quadratic scaling bug present\nE   assert 0.022836663000020962 < 0.015\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: difference_update too slow (22...\n1 failed in 0.32s\n"
+    }
+  ]
+}

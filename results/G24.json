@@ -1,0 +1,44 @@
+{
+  "bug": "G24",
+  "issue": "https://github.com/pallets/click/issues/3242",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/click/_termui_impl.py",
+    "src/click/termui.py",
+    "src/click/__init__.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 45,
+  "tries": [
+    {
+      "guess": "The pager stream is not flushed after writing via echo_via_pager, causing output buffering issues when piped into pagers like less.",
+      "test_code": "import click\nimport io\nfrom unittest.mock import patch\n\nclass MockBuffer(io.BytesIO):\n    def __init__(self):\n        super().__init__()\n        self.flushed = False\n\n    def flush(self):\n        self.flushed = True\n        super().flush()\n\nclass MockStream(io.TextIOWrapper):\n    def __init__(self, buffer):\n        super().__init__(buffer, encoding='utf-8')\n\ndef test_bug():\n    buf = MockBuffer()\n    stream = MockStream(buf)\n    \n    with patch('click.termui._pager_contextmanager') as mock_pager:\n        mock_pager.return_value.__enter__.return_value = (stream, 'utf-8', False)\n        \n        click.echo_via_pager(\"test line\\n\")\n        \n        assert buf.flushed\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:22: in test_bug\n    with patch('click.termui._pager_contextmanager') as mock_pager:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/unittest/mock.py:1467: in __enter__\n    original, local = self.get_original()\n                      ^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/unittest/mock.py:1437: in get_original\n    raise AttributeError(\nE   AttributeError: <module 'click.termui' from '/app/src/click/termui.py'> does not have the attribute '_pager_contextmanager'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: <module 'click.termui' from '/...\n1 failed in 1.03s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "The pager file context manager in _termui_impl does not flush the stream immediately after writing via echo_via_pager.",
+      "test_code": "import click\nfrom unittest.mock import MagicMock, patch\n\ndef test_bug():\n    mock_stream = MagicMock()\n    with patch(\"click._termui_impl._pager_contextmanager\") as mock_manager:\n        mock_manager.return_value.__enter__.return_value = (mock_stream, \"utf-8\", False)\n        \n        def gen():\n            yield \"line 1\\n\"\n            \n        click.echo_via_pager(gen)\n        \n        assert mock_stream.flush.called\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\nsrc/click/_termui_impl.py:452: in get_pager_file\n    yield stream\nsrc/click/termui.py:348: in echo_via_pager\n    pager.write(text)\nsrc/click/_termui_impl.py:396: in write\n    return super().write(text)\n           ^^^^^^^^^^^^^^^^^^^\nE   ValueError: I/O operation on closed file.\n\nDuring handling of the above exception, another exception occurred:\ntest_bug.py:12: in test_bug\n    click.echo_via_pager(gen)\nsrc/click/termui.py:346: in echo_via_pager\n    with get_pager_file(color=color) as pager:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/contextlib.py:158: in __exit__\n    self.gen.throw(value)\nsrc/click/_termui_impl.py:454: in get_pager_file\n    stream.flush()\nE   ValueError: I/O operation on closed file.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - ValueError: I/O operation on closed file.\n1 failed in 1.07s\n",
+      "match": false,
+      "reason": "It failed with ValueError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid control character at: line 2 column 773 (char 773)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "The pager stream does not flush after each write in echo_via_pager, causing output to be buffered until 512 lines are yielded.",
+      "test_code": "import click\nimport io\nfrom unittest.mock import patch\n\ndef test_bug():\n    stream = io.StringIO()\n    def gen():\n        yield \"line 1\\n\"\n        assert stream.getvalue() == \"line 1\\n\"\n\n    with patch(\"click._termui_impl._pager_contextmanager\") as mock_pager:\n        mock_pager.return_value.__enter__.return_value = (stream, \"utf-8\", False)\n        click.echo_via_pager(gen())\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.59s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

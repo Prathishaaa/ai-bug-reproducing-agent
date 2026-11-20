@@ -1,0 +1,24 @@
+{
+  "bug": "G110",
+  "issue": "https://github.com/pallets/werkzeug/issues/3189",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/werkzeug/urls.py",
+    "src/werkzeug/security.py",
+    "src/werkzeug/datastructures/auth.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 111,
+  "tries": [
+    {
+      "guess": "uri_to_iri and iri_to_uri use truthiness checks on username and password instead of checking if they are not None, incorrectly dropping empty-but-present components.",
+      "test_code": "from werkzeug.urls import uri_to_iri, iri_to_uri\n\n\ndef test_bug():\n    assert uri_to_iri(\"http://:pass@example.com/path\") == \"http://:pass@example.com/path\"\n    assert uri_to_iri(\"http://user:@example.com/path\") == \"http://user:@example.com/path\"\n    assert iri_to_uri(\"http://:pass@example.com/path\") == \"http://:pass@example.com/path\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert uri_to_iri(\"http://:pass@example.com/path\") == \"http://:pass@example.com/path\"\nE   AssertionError: assert 'http://example.com/path' == 'http://:pass...mple.com/path'\nE     \nE     - http://:pass@example.com/path\nE     ?        ------\nE     + http://example.com/path\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'http://example.com/pat...\n1 failed in 3.54s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.77s\n"
+    }
+  ]
+}

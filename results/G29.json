@@ -1,0 +1,29 @@
+{
+  "bug": "G29",
+  "issue": "https://github.com/jaraco/inflect/issues/176",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "inflect/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 41,
+  "tries": [
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid control character at: line 2 column 168 (char 168)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "The number_to_words method uses hardcoded comma characters instead of the custom comma argument in chunk splitting and rendering.",
+      "test_code": "import inflect\n\ndef test_bug():\n    p = inflect.engine()\n    res = p.number_to_words(12345, comma=';')\n    assert ';' in res\n    assert ',' not in res\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert ';' in res\nE   AssertionError: assert ';' in 'twelve thousand, three hundred and forty-five'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ';' in 'twelve thousand...\n1 failed in 2.74s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 3.01s\n"
+    }
+  ]
+}

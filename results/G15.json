@@ -1,0 +1,31 @@
+{
+  "bug": "G15",
+  "issue": "https://github.com/astanin/python-tabulate/issues/53",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate/__init__.py",
+    "test/test_regression.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 64,
+  "tries": [
+    {
+      "guess": "The github table format does not incorporate column alignments (stralign / colalign) into the header delimiter line by adding colons (:), unlike the pipe format.",
+      "test_code": "from tabulate import tabulate\nfrom common import assert_equal\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", 451.0]]\n    headers = [\"strings\", \"numbers\"]\n    result = tabulate(table, headers, tablefmt=\"github\", stralign=\"left\")\n    expected = \"\\n\".join(\n        [\n            \"| strings   |   numbers |\",\n            \"|:----------|----------:|\",\n            \"| spam      |   41.9999 |\",\n            \"| eggs      |  451      |\",\n        ]\n    )\n    assert_equal(expected, result)\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:2: in <module>\n    from common import assert_equal\nE   ModuleNotFoundError: No module named 'common'\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.32s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    },
+    {
+      "guess": "For tablefmt='github' with stralign/colalign arguments, the header delimiter line does not include colons to indicate alignment, unlike the pipe format.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [[\"spam\", 41.9999], [\"eggs\", 451.0]]\n    headers = [\"strings\", \"numbers\"]\n    result = tabulate(table, headers, tablefmt=\"github\", colalign=(\"left\", \"right\"))\n    expected = \"\\n\".join(\n        [\n            \"| strings   |   numbers |\",\n            \"|:----------|----------:|\",\n            \"| spam      |   41.9999 |\",\n            \"| eggs      |   451     |\",\n        ]\n    )\n    assert result == expected\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:15: in test_bug\n    assert result == expected\nE   AssertionError: assert '| strings   ...|       451 |' == '| strings   ...|   451     |'\nE     \nE       | strings   |   numbers |\nE     - |:----------|----------:|\nE     ?  ^                     ^\nE     + |-----------|-----------|\nE     ?  ^                     ^\nE       | spam      |   41.9999 |...\nE     \nE     ...Full output truncated, use '-vv' to show\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '| strings   ...|      ...\n1 failed in 0.24s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:15: in test_bug\n    assert result == expected\nE   AssertionError: assert '| strings   ...|       451 |' == '| strings   ...|   451     |'\nE     \nE     Skipping 84 identical leading characters in diff, use -v to show\nE     -       |   451     |\nE     ?               ----\nE     +       |       451 |\nE     ?        ++++\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '| strings   ...|      ...\n1 failed in 0.30s\n"
+    }
+  ]
+}

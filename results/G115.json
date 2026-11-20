@@ -1,0 +1,24 @@
+{
+  "bug": "G115",
+  "issue": "https://github.com/pallets/werkzeug/issues/3108",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/werkzeug/wrappers/response.py",
+    "src/werkzeug/utils.py",
+    "src/werkzeug/sansio/response.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 108,
+  "tries": [
+    {
+      "guess": "make_conditional with accept_ranges=True fails to set the Accept-Ranges header on non-range requests because it only sets it inside _process_range_request which checks if a Range header is present.",
+      "test_code": "import io\nfrom werkzeug.wrappers import Response\n\ndef test_bug():\n    text = b\"Hello world!\"\n    response = Response(text, mimetype='text/plain')\n    response.set_etag('test')\n    environ = {'REQUEST_METHOD': 'GET'}\n    response.make_conditional(environ, accept_ranges=True, complete_length=len(text))\n    assert response.headers.get('Accept-Ranges') == 'bytes'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert response.headers.get('Accept-Ranges') == 'bytes'\nE   assert None == 'bytes'\nE    +  where None = get('Accept-Ranges')\nE    +    where get = Headers([('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', '12'), ('ETag', '\"test\"'), ('Date', 'Fri, 20 Nov 2026 07:22:25 GMT')]).get\nE    +      where Headers([('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', '12'), ('ETag', '\"test\"'), ('Date', 'Fri, 20 Nov 2026 07:22:25 GMT')]) = <Response 12 bytes [200 OK]>.headers\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert None == 'bytes'\n1 failed in 7.38s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 2.14s\n"
+    }
+  ]
+}

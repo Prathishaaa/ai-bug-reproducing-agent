@@ -1,0 +1,44 @@
+{
+  "bug": "G148",
+  "issue": "https://github.com/python-validators/validators/issues/373",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/validators/ip_address.py",
+    "src/validators/url.py",
+    "src/validators/hostname.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 111,
+  "tries": [
+    {
+      "guess": "_check_private_ip returns True for private IPs and False for public IPs, but ipv4 requires True for both valid IP format and private ip check constraints, causing `private=False` to fail for public IP addresses.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.ipv4(\"1.1.1.1\", private=False) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.ipv4(\"1.1.1.1\", private=False) is True\nE   AssertionError: assert ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) is True\nE    +  where ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) = <function ipv4 at 0x779f845f1800>('1.1.1.1', private=False)\nE    +    where <function ipv4 at 0x779f845f1800> = validators.ipv4\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ip...\n1 failed in 2.52s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "_check_private_ip returns False when is_false (private=False) is supplied for a public IP, causing the ipv4 validator logic using 'and' to evaluate to False and return a ValidationError.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.ipv4('1.1.1.1', private=False) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.ipv4('1.1.1.1', private=False) is True\nE   AssertionError: assert ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) is True\nE    +  where ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) = <function ipv4 at 0x7b9e686c9800>('1.1.1.1', private=False)\nE    +    where <function ipv4 at 0x7b9e686c9800> = validators.ipv4\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ip...\n1 failed in 2.07s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The function _check_private_ip returns False for public IP addresses when private=False is passed, causing the boolean expression in ipv4 to evaluate to False and return a ValidationError.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.ipv4('1.1.1.1', private=False) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.ipv4('1.1.1.1', private=False) is True\nE   AssertionError: assert ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) is True\nE    +  where ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) = <function ipv4 at 0x7c4b1aa11800>('1.1.1.1', private=False)\nE    +    where <function ipv4 at 0x7c4b1aa11800> = validators.ipv4\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ip...\n1 failed in 1.70s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "_check_private_ip returns False for a public IP when private=False is passed, causing the 'and' expression in ipv4 to fail.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.ipv4('1.1.1.1', private=False) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.ipv4('1.1.1.1', private=False) is True\nE   AssertionError: assert ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) is True\nE    +  where ValidationError(func=ipv4, args={'value': '1.1.1.1', 'private': False}) = <function ipv4 at 0x751e23929800>('1.1.1.1', private=False)\nE    +    where <function ipv4 at 0x751e23929800> = validators.ipv4\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ip...\n1 failed in 1.70s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

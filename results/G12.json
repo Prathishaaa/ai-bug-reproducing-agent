@@ -1,0 +1,23 @@
+{
+  "bug": "G12",
+  "issue": "https://github.com/more-itertools/more-itertools/issues/1284",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "more_itertools/more.py",
+    "more_itertools/recipes.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 29,
+  "tries": [
+    {
+      "guess": "A membership test (`in`) or lookup on a `bucket` checks `self._cache[value]`, which automatically creates a default entry for missing keys due to using `defaultdict(deque)`, thereby adding phantom keys to iteration.",
+      "test_code": "from more_itertools import bucket\n\ndef test_bug():\n    s = bucket(['a1', 'b1', 'a2'], key=lambda x: x[0])\n    assert ('c' in s) is False\n    assert 'c' not in list(s)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert 'c' not in list(s)\nE   AssertionError: assert 'c' not in ['c', 'a', 'b']\nE    +  where ['c', 'a', 'b'] = list(<more_itertools.more.bucket object at 0x77cc1e844bc0>)\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'c' not in ['c', 'a', 'b']\n1 failed in 0.38s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.24s\n"
+    }
+  ]
+}

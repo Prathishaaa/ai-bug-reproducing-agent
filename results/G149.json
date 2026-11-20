@@ -1,0 +1,22 @@
+{
+  "bug": "G149",
+  "issue": "https://github.com/python-validators/validators/issues/316",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/validators/url.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 69,
+  "tries": [
+    {
+      "guess": "The fragment regex does not include the '%' character, preventing pct-encoded entities like '%20' from being matched.",
+      "test_code": "from validators import url\n\n\ndef test_bug():\n    assert url('https://example.com/#2022%201040%20(Cornelius%20Morgan%20G).pdf')\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert url('https://example.com/#2022%201040%20(Cornelius%20Morgan%20G).pdf')\nE   AssertionError: assert ValidationError(func=url, args={'value': 'https://example.com/#2022%201040%20(Cornelius%20Morgan%20G).pdf'})\nE    +  where ValidationError(func=url, args={'value': 'https://example.com/#2022%201040%20(Cornelius%20Morgan%20G).pdf'}) = url('https://example.com/#2022%201040%20(Cornelius%20Morgan%20G).pdf')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 2.16s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.17s\n"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "bug": "G161",
+  "issue": "https://github.com/falconry/falcon/issues/2735",
+  "error_to_find": "ValueError",
+  "files_picked": [
+    "falcon/request.py",
+    "falcon/asgi/request.py",
+    "examples/things_advanced.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 3788,
+  "tries": [
+    {
+      "guess": "falcon.Request.get_param() and related parameter helper methods do not yet support an argument (such as require_single or allow_multiple) to disallow multiple values and raise an HTTPBadRequest exception when a parameter is specified multiple times.",
+      "test_code": "import falcon\nimport pytest\n\n\ndef test_bug():\n    req = falcon.Request(environ={'REQUEST_METHOD': 'GET', 'QUERY_STRING': 'foo=bar&foo=baz', 'PATH_INFO': '/'})\n    with pytest.raises(falcon.HTTPBadRequest):\n        req.get_param('foo', require_single=True)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    req = falcon.Request(environ={'REQUEST_METHOD': 'GET', 'QUERY_STRING': 'foo=bar&foo=baz', 'PATH_INFO': '/'})\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: Request.__init__() got an unexpected keyword argument 'environ'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: Request.__init__() got an unexpecte...\n1 failed in 2.24s\n",
+      "match": false,
+      "reason": "It failed with TypeError, but the bug is ValueError. Look for a different cause."
+    },
+    {
+      "guess": "falcon.Request.get_param() lacks an argument (such as require_single) to disallow multiple values and raise an HTTPInvalidParam or HTTPBadRequest when multiple values are present.",
+      "test_code": "import falcon\n\n\ndef test_bug():\n    req = falcon.Request({'REQUEST_METHOD': 'GET', 'QUERY_STRING': 'foo=bar&foo=baz', 'PATH_INFO': '/', 'wsgi.errors': None})\n    try:\n        req.get_param('foo', require_single=True)\n    except falcon.HTTPInvalidParam:\n        pass\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    req = falcon.Request({'REQUEST_METHOD': 'GET', 'QUERY_STRING': 'foo=bar&foo=baz', 'PATH_INFO': '/', 'wsgi.errors': None})\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nfalcon/request.py:322: in __init__\n    self.stream = env['wsgi.input']\n                  ^^^^^^^^^^^^^^^^^\nE   KeyError: 'wsgi.input'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - KeyError: 'wsgi.input'\n1 failed in 1.28s\n",
+      "match": false,
+      "reason": "It failed with KeyError, but the bug is ValueError. Look for a different cause."
+    },
+    {
+      "guess": "falcon.Request.get_param() does not support an argument (e.g., require_single) to disallow multiple parameter values and raise an HTTPInvalidParam or HTTPBadRequest error.",
+      "test_code": "import falcon\nfrom falcon import testing\n\ndef test_bug():\n    req = testing.create_req(query_string='foo=bar&foo=baz')\n    try:\n        req.get_param('foo', require_single=True)\n    except falcon.HTTPInvalidParam:\n        return\n    except falcon.HTTPBadRequest:\n        return\n    raise AssertionError(\"Expected an exception when multiple values are present and require_single=True is specified\")\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    req.get_param('foo', require_single=True)\nE   TypeError: Request.get_param() got an unexpected keyword argument 'require_single'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: Request.get_param() got an unexpect...\n1 failed in 1.72s\n",
+      "match": false,
+      "reason": "It failed with TypeError, but the bug is ValueError. Look for a different cause."
+    },
+    {
+      "guess": "falcon.Request.get_param() does not yet support an argument like require_single or require_scalar to disallow multiple values for a query parameter.",
+      "test_code": "import falcon\nfrom io import BytesIO\n\ndef test_bug():\n    env = {'REQUEST_METHOD': 'GET', 'QUERY_STRING': 'foo=bar&foo=baz', 'PATH_INFO': '/', 'wsgi.errors': BytesIO(), 'wsgi.input': BytesIO()}\n    req = falcon.Request(env)\n    try:\n        req.get_param('foo', require_single=True)\n    except TypeError:\n        raise\n    except Exception:\n        pass\n    else:\n        raise AssertionError('Expected an exception for multiple values when require_single=True')\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    req.get_param('foo', require_single=True)\nE   TypeError: Request.get_param() got an unexpected keyword argument 'require_single'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: Request.get_param() got an unexpect...\n1 failed in 1.08s\n",
+      "match": false,
+      "reason": "It failed with TypeError, but the bug is ValueError. Look for a different cause."
+    }
+  ]
+}

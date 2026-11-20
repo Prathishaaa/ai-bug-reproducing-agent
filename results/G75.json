@@ -1,0 +1,38 @@
+{
+  "bug": "G75",
+  "issue": "https://github.com/python-attrs/attrs/issues/1479",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/attr/_make.py",
+    "src/attr/_next_gen.py",
+    "typing-examples/mypy.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 49,
+  "tries": [
+    {
+      "guess": "The alias property of attributes is set after the field transformer runs rather than before, causing it to be None inside field_transformer functions.",
+      "test_code": "from attrs import define, field, fields\n\n\ndef test_bug():\n    captured_aliases = []\n\n    def transformer(cls, attrs):\n        for a in attrs:\n            captured_aliases.append(a.alias)\n        return attrs\n\n    @define(field_transformer=transformer)\n    class C:\n        x: int = field(default=0, alias=\"custom_alias\")\n\n    assert captured_aliases == [\"custom_alias\"]\n",
+      "output": ".                                                                        [100%]\n1 passed in 1.38s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "The default alias resolution happens after the field_transformer is executed, so un-aliased attributes have their alias property as None inside the field transformer instead of being populated with their default alias.",
+      "test_code": "import attrs\n\n\ndef ft(cls, fields):\n    for f in fields:\n        assert f.alias is not None\n    return fields\n\n\n@attrs.define(field_transformer=ft)\nclass C:\n    x: int\n\n\ndef test_bug():\n    C()\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\ntest_bug.py:10: in <module>\n    @attrs.define(field_transformer=ft)\n     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/attr/_next_gen.py:421: in wrap\n    return do_it(cls, True)\n           ^^^^^^^^^^^^^^^^\nsrc/attr/_next_gen.py:366: in do_it\n    return attrs(\nsrc/attr/_make.py:1575: in attrs\n    return wrap(maybe_cls)\n           ^^^^^^^^^^^^^^^\nsrc/attr/_make.py:1523: in wrap\n    builder = _ClassBuilder(\nsrc/attr/_make.py:674: in __init__\n    attrs, base_attrs, base_map = _transform_attrs(\nsrc/attr/_make.py:467: in _transform_attrs\n    attrs = tuple(field_transformer(cls, attrs))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:6: in ft\n    assert f.alias is not None\nE   AssertionError: assert None is not None\nE    +  where None = Attribute(name='x', default=NOTHING, validator=None, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash...data=mappingproxy({}), type=<class 'int'>, converter=None, kw_only=False, inherited=False, on_setattr=None, alias=None).alias\n=========================== short test summary info ============================\nERROR test_bug.py - AssertionError: assert None is not None\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 1.74s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    },
+    {
+      "guess": "The alias property of Attribute is None during field transformation because default alias resolution is performed after the field transformer runs.",
+      "test_code": "from attrs import define, field\n\ndef ft(cls, attrs):\n    for a in attrs:\n        assert a.alias is not None\n    return attrs\n\ndef test_bug():\n    @define(field_transformer=ft)\n    class C:\n        x: int = 1\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    @define(field_transformer=ft)\n     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/attr/_next_gen.py:421: in wrap\n    return do_it(cls, True)\n           ^^^^^^^^^^^^^^^^\nsrc/attr/_next_gen.py:366: in do_it\n    return attrs(\nsrc/attr/_make.py:1575: in attrs\n    return wrap(maybe_cls)\n           ^^^^^^^^^^^^^^^\nsrc/attr/_make.py:1523: in wrap\n    builder = _ClassBuilder(\nsrc/attr/_make.py:674: in __init__\n    attrs, base_attrs, base_map = _transform_attrs(\nsrc/attr/_make.py:467: in _transform_attrs\n    attrs = tuple(field_transformer(cls, attrs))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:5: in ft\n    assert a.alias is not None\nE   AssertionError: assert None is not None\nE    +  where None = Attribute(name='x', default=1, validator=None, repr=True, eq=True, eq_key=None, order=True, order_key=None, hash=None,...data=mappingproxy({}), type=<class 'int'>, converter=None, kw_only=False, inherited=False, on_setattr=None, alias=None).alias\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert None is not None\n1 failed in 1.53s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.19s\n"
+    }
+  ]
+}

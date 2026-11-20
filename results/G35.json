@@ -1,0 +1,44 @@
+{
+  "bug": "G35",
+  "issue": "https://github.com/marshmallow-code/marshmallow/issues/2985",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/marshmallow/fields.py",
+    "src/marshmallow/schema.py",
+    "src/marshmallow/decorators.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 64,
+  "tries": [
+    {
+      "guess": "fields.Enum with by_value=True does not implicitly allow None values when an enum member has a None value, raising a ValidationError instead of treating None as a valid value domain.",
+      "test_code": "from enum import Enum\nimport marshmallow as ma\nfrom marshmallow import Schema, fields\n\nclass MyEnum(Enum):\n    A = 'a'\n    NONE = None\n\nclass S(Schema):\n    sentinel = fields.Enum(MyEnum, by_value=True)\n\ndef test_bug():\n    data = {'sentinel': None}\n    result = S().load(data)\n    assert result == {'sentinel': MyEnum.NONE}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:14: in test_bug\n    result = S().load(data)\n             ^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:734: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:942: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'sentinel': ['Field may not be null.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'sent...\n1 failed in 1.09s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "fields.Enum() does not consider enum members with value None as valid when allow_none is not explicitly set, causing validation to reject None values even when by_value=True.",
+      "test_code": "from enum import Enum\nimport marshmallow as ma\nfrom marshmallow import Schema, fields\n\nclass MyEnum(Enum):\n    A = 'a'\n    NONE = None\n\nclass S(Schema):\n    sentinel = fields.Enum(MyEnum, by_value=True)\n\ndef test_bug():\n    data = {'sentinel': None}\n    result = S().load(data)\n    assert result == {'sentinel': MyEnum.NONE}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:14: in test_bug\n    result = S().load(data)\n             ^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:734: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:942: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'sentinel': ['Field may not be null.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'sent...\n1 failed in 0.82s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "fields.Enum() does not automatically set allow_none=True when an enum member has a None value and by_value=True.",
+      "test_code": "from enum import Enum\nimport marshmallow as ma\nfrom marshmallow import Schema, fields\n\nclass MyEnum(Enum):\n    A = 'a'\n    NONE = None\n\nclass S(Schema):\n    sentinel = fields.Enum(MyEnum, by_value=True)\n\ndef test_bug():\n    data = {'sentinel': None}\n    result = S().load(data)\n    assert result == {'sentinel': MyEnum.NONE}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:14: in test_bug\n    result = S().load(data)\n             ^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:734: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:942: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'sentinel': ['Field may not be null.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'sent...\n1 failed in 0.91s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "fields.Enum() does not check if any member of the enum has a None value when by_value=True to automatically allow None as a valid value.",
+      "test_code": "import marshmallow as ma\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass MyEnum(Enum):\n    A = 'a'\n    NONE = None\n\nclass S(Schema):\n    sentinel = fields.Enum(MyEnum, by_value=True)\n\ndef test_bug():\n    data = {'sentinel': None}\n    result = S().load(data)\n    assert result['sentinel'] == MyEnum.NONE\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:14: in test_bug\n    result = S().load(data)\n             ^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:734: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:942: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'sentinel': ['Field may not be null.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'sent...\n1 failed in 0.79s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

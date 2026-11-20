@@ -1,0 +1,44 @@
+{
+  "bug": "G109",
+  "issue": "https://github.com/pallets/werkzeug/issues/3242",
+  "error_to_find": "OverflowError",
+  "files_picked": [
+    "src/werkzeug/routing/rules.py",
+    "src/werkzeug/routing/map.py",
+    "src/werkzeug/serving.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 704,
+  "tries": [
+    {
+      "guess": "Float converter allows overflow values to become 'inf' instead of raising a validation error or failing, and int converter with fixed_digits counts the negative sign as a digit.",
+      "test_code": "from werkzeug.routing import Map, Rule\nfrom werkzeug.routing.converters import FloatConverter, IntConverter\n\ndef test_bug():\n    m = Map([\n        Rule('/float/<float:val>', endpoint='float'),\n        Rule('/int/<int(fixed_digits=4, signed=True):val>', endpoint='int')\n    ])\n    adapter = m.bind('example.com', '/')\n    \n    # Test float overflow becoming inf\n    try:\n        adapter.match('/float/1e99999')\n    except Exception:\n        pass\n    else:\n        # If it matched successfully as inf, that's the bug\n        conv = FloatConverter(m)\n        assert conv.to_python('1e99999') != float('inf')\n\n    # Test int fixed_digits counting negative sign as digit\n    try:\n        adapter.match('/int/-123')\n    except Exception:\n        pass\n    else:\n        conv_int = IntConverter(m, fixed_digits=4, signed=True)\n        assert conv_int.to_python('-123') is None\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\nImportError while importing test module '/app/test_bug.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/local/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntest_bug.py:2: in <module>\n    from werkzeug.routing.converters import FloatConverter, IntConverter\nE   ImportError: cannot import name 'IntConverter' from 'werkzeug.routing.converters' (/app/src/werkzeug/routing/converters.py)\n=========================== short test summary info ============================\nERROR test_bug.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 5.61s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    },
+    {
+      "guess": "Int and float converters accept non-ASCII digits, float overflow becomes inf, and signed int with fixed_digits incorrectly includes the minus sign in the digit count.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule\nfrom werkzeug.routing.converters import IntegerConverter, FloatConverter\n\ndef test_bug():\n    m = Map([\n        Rule('/int/<int(fixed_digits=4, signed=True):val>', endpoint='int'),\n        Rule('/float/<float:val>', endpoint='float'),\n    ])\n    adapter = m.bind('example.com', '/')\n    \n    # signed=True with fixed_digits=4 should not count the negative sign as a digit (so '-123' should fail for 4 digits, or require 4 digits after sign)\n    with pytest.raises(Exception):\n        adapter.match('/int/-123')\n\n    # float overflow should not become inf\n    with pytest.raises(Exception):\n        adapter.match('/float/1e99999')\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:13: in test_bug\n    with pytest.raises(Exception):\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: DID NOT RAISE Exception\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: DID NOT RAISE Exception\n1 failed in 3.77s\n",
+      "match": false,
+      "reason": "It failed with Timeout, but the bug is OverflowError. Look for a different cause."
+    },
+    {
+      "guess": "Float converter allows overflow values to become inf and underflow values to become 0.0 instead of failing with ValidationError.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule, FloatConverter\n\ndef test_bug():\n    m = Map([Rule('/float/<float:val>', endpoint='f')])\n    adapter = m.bind('example.com', '/')\n    with pytest.raises(Exception):\n        adapter.match('/float/1e99999')\n",
+      "output": ".                                                                        [100%]\n1 passed in 1.97s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Float converter allows overflow values to become inf instead of raising a ValidationError.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule\n\ndef test_bug():\n    m = Map([Rule('/<float:value>', endpoint='test')])\n    adapter = m.bind('example.com', '/')\n    with pytest.raises(Exception):\n        adapter.match('/1e99999')\n",
+      "output": ".                                                                        [100%]\n1 passed in 1.84s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

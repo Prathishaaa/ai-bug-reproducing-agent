@@ -1,0 +1,24 @@
+{
+  "bug": "G37",
+  "issue": "https://github.com/marshmallow-code/marshmallow/issues/2869",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/marshmallow/validate.py",
+    "src/marshmallow/schema.py",
+    "src/marshmallow/fields.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 23,
+  "tries": [
+    {
+      "guess": "OneOf.options() uses zip_longest with fillvalue='' when zipping choices and labels, which incorrectly emits extra pairs with empty string values when labels outnumber choices.",
+      "test_code": "import pytest\nfrom marshmallow.validate import OneOf\n\ndef test_bug():\n    oneof = OneOf(choices=[], labels=[\"extra\"])\n    assert list(oneof.options()) == []\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert list(oneof.options()) == []\nE   AssertionError: assert [('', 'extra')] == []\nE     \nE     Left contains one more item: ('', 'extra')\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert [('', 'extra')] == []\n1 failed in 0.73s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.53s\n"
+    }
+  ]
+}

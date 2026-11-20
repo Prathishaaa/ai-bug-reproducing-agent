@@ -1,0 +1,24 @@
+{
+  "bug": "G133",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/773",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/sql.py",
+    "sqlparse/engine/grouping.py",
+    "sqlparse/keywords.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 113,
+  "tries": [
+    {
+      "guess": "sqlparse fails to parse ROW_FORMAT in ALTER statements because ROW_FORMAT is not recognized as a separate keyword or token type, causing it to merge with the preceding table identifier via comparison grouping.",
+      "test_code": "import sqlparse\nfrom sqlparse.sql import Identifier, Comparison\n\ndef test_bug():\n    string = \"\"\"ALTER TABLE mytable ROW_FORMAT=Dynamic;\"\"\"\n    statement = sqlparse.parse(string)[0]\n    identifiers = [t for t in statement.tokens if isinstance(t, Identifier)]\n    # The table identifier should be just 'mytable', not containing 'ROW_FORMAT=Dynamic'\n    for ident in identifiers:\n        assert 'ROW_FORMAT' not in ident.value\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert 'ROW_FORMAT' not in ident.value\nE   AssertionError: assert 'ROW_FORMAT' not in 'mytable ROW_FORMAT'\nE     \nE     'ROW_FORMAT' is contained here:\nE       mytable ROW_FORMAT\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'ROW_FORMAT' not in 'my...\n1 failed in 2.12s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.10s\n"
+    }
+  ]
+}

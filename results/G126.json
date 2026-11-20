@@ -1,0 +1,24 @@
+{
+  "bug": "G126",
+  "issue": "https://github.com/tortoise/tortoise-orm/issues/2376",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "tortoise/backends/base/config_generator.py",
+    "tortoise/backends/psycopg/client.py",
+    "tortoise/backends/sqlite/client.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 175,
+  "tries": [
+    {
+      "guess": "Boolean database URL options are cast using bool(), which evaluates any non-empty string (including 'false') to True.",
+      "test_code": "from tortoise.backends.base.config_generator import expand_db_url\n\n\ndef test_bug():\n    config = expand_db_url(\"asyncpg://example:example@localhost/db?ssl=false\")\n    assert config[\"credentials\"][\"ssl\"] is False\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert config[\"credentials\"][\"ssl\"] is False\nE   assert True is False\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert True is False\n1 failed in 1.25s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.39s\n"
+    }
+  ]
+}

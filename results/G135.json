@@ -1,0 +1,24 @@
+{
+  "bug": "G135",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/332",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/engine/grouping.py",
+    "sqlparse/sql.py",
+    "examples/extract_table_names.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 96,
+  "tries": [
+    {
+      "guess": "get_real_name finds the first period and returns the name before it instead of the actual object name when multiple dot separators are present.",
+      "test_code": "import sqlparse\nfrom sqlparse.sql import Identifier\n\ndef test_bug():\n    sql = 'select db1.table1.a1 from test_table'\n    parsed = sqlparse.parse(sql)[0]\n    # Find the identifier db1.table1.a1 in the select list\n    identifier = parsed.tokens[2]\n    assert isinstance(identifier, Identifier)\n    assert identifier.get_real_name() == 'a1'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert identifier.get_real_name() == 'a1'\nE   AssertionError: assert 'table1' == 'a1'\nE     \nE     - a1\nE     + table1\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'table1' == 'a1'\n1 failed in 1.86s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.06s\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "bug": "G127",
+  "issue": "https://github.com/tortoise/tortoise-orm/issues/2378",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "tortoise/backends/base/config_generator.py",
+    "examples/blacksheep/_tests.py",
+    "examples/fastapi/routers.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 152,
+  "tries": [
+    {
+      "guess": "The expand_db_url function fails to apply urlparse.unquote to the extracted username from the database URL credentials.",
+      "test_code": "from tortoise.backends.base.config_generator import expand_db_url\n\ndef test_bug():\n    config = expand_db_url(\"asyncpg://first%40last:example@localhost/db\")\n    assert config[\"credentials\"][\"user\"] == \"first@last\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert config[\"credentials\"][\"user\"] == \"first@last\"\nE   AssertionError: assert 'first%40last' == 'first@last'\nE     \nE     - first@last\nE     ?      ^\nE     + first%40last\nE     ?      ^^^\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'first%40last' == 'firs...\n1 failed in 1.24s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.38s\n"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "bug": "G132",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/601",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/engine/grouping.py",
+    "sqlparse/engine/statement_splitter.py",
+    "sqlparse/sql.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 146,
+  "tries": [
+    {
+      "guess": "Decimals starting with a dot (e.g. .03) are parsed as identifiers instead of numbers, breaking BETWEEN and comparisons.",
+      "test_code": "import sqlparse\nfrom sqlparse import sql\n\ndef test_bug():\n    test_sql = \"select l_discount from lineitem where l_discount between .03 and .06;\"\n    statement = sqlparse.parse(test_sql)[0]\n    for token in statement.tokens:\n        if isinstance(token, sql.Where):\n            for sub_token in token.tokens:\n                if sub_token.value in [' ', '\\n']:\n                    continue\n                if sub_token.value.strip().lower() == 'between':\n                    assert not isinstance(sub_token, sql.Identifier)\n",
+      "output": ".                                                                        [100%]\n1 passed in 1.57s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Decimals starting with a dot are tokenized as T.Number.Float, but group_identifier incorrectly considers them or combines them with subsequent tokens because group_identifier matches T.Name and T.String.Symbol, while aliased or another grouping function misinterprets numbers starting with a dot.",
+      "test_code": "import sqlparse\n\ndef test_bug():\n    test_sql = 'select l_discount from lineitem where l_discount between .03 and .06;'\n    statement = sqlparse.parse(test_sql)[0]\n    where_clause = None\n    for token in statement.tokens:\n        if isinstance(token, sqlparse.sql.Where):\n            where_clause = token\n            break\n    assert where_clause is not None\n    # Check that 'between' and 'and' are not swallowed into identifiers\n    values = [sub.value for sub in where_clause.tokens if not sub.is_whitespace]\n    assert 'between' in values\n    assert 'and' in values\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:14: in test_bug\n    assert 'between' in values\nE   AssertionError: assert 'between' in ['where', 'l_discount between', '.03 and', '.06', ';']\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'between' in ['where', ...\n1 failed in 1.62s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.41s\n"
+    }
+  ]
+}

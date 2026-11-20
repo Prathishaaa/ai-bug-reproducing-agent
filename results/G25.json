@@ -1,0 +1,44 @@
+{
+  "bug": "G25",
+  "issue": "https://github.com/pallets/click/issues/3084",
+  "error_to_find": "SystemExit",
+  "files_picked": [
+    "src/click/core.py",
+    "src/click/parser.py",
+    "src/click/decorators.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 43,
+  "tries": [
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid control character at: line 2 column 238 (char 238)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "Setting `is_flag=False, flag_value=value` incorrectly triggers the requirement of an argument because `_flag_needs_value` checks are misaligned for options with explicit `flag_value` and `is_flag=False`.",
+      "test_code": "import click\n\ndef test_bug():\n    @click.command()\n    @click.option(\"--name\", is_flag=False, flag_value=\"Flag\", default=\"Default\")\n    def hello(name):\n        click.echo(f\"Hello, {name}!\")\n\n    runner = click.testing.CliRunner()\n    result = runner.invoke(hello, [\"--name\"])\n    assert result.exit_code == 0\n    assert \"Hello, Flag!\" in result.output\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    runner = click.testing.CliRunner()\n             ^^^^^^^^^^^^^\nsrc/click/__init__.py:123: in __getattr__\n    raise AttributeError(name)\nE   AttributeError: testing\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: testing\n1 failed in 0.89s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is SystemExit. Look for a different cause."
+    },
+    {
+      "guess": "When an option has is_flag=False and a flag_value provided, the parser incorrectly treats it as requiring an argument instead of using the flag_value when the flag is passed without a value.",
+      "test_code": "import click\n\ndef test_bug():\n    @click.command()\n    @click.option('--name', is_flag=False, flag_value='Flag', default='Default')\n    def hello(name):\n        click.echo(f'Hello, {name}!')\n\n    result = hello.main(['--name'], standalone_mode=False)\n    assert result == 'Hello, Flag!'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    result = hello.main(['--name'], standalone_mode=False)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/core.py:1405: in main\n    with self.make_context(prog_name, args, **extra) as ctx:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/core.py:1216: in make_context\n    self.parse_args(ctx, args)\nsrc/click/core.py:1224: in parse_args\n    opts, args, param_order = parser.parse_args(args=args)\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/parser.py:305: in parse_args\n    self._process_args_for_options(state)\nsrc/click/parser.py:332: in _process_args_for_options\n    self._process_opts(arg, state)\nsrc/click/parser.py:484: in _process_opts\n    self._match_long_opt(norm_long_opt, explicit_value, state)\nsrc/click/parser.py:377: in _match_long_opt\n    value = self._get_value_from_state(opt, option, state)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/parser.py:441: in _get_value_from_state\n    raise BadOptionUsage(\nE   click.exceptions.BadOptionUsage: Option '--name' requires an argument.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - click.exceptions.BadOptionUsage: Option '--nam...\n1 failed in 1.05s\n",
+      "match": false,
+      "reason": "It failed with click, but the bug is SystemExit. Look for a different cause."
+    },
+    {
+      "guess": "Option.is_flag auto-detection incorrectly sets is_flag=False when flag_value is given and _flag_needs_value is False, causing the parser to treat the option as taking a value rather than acting as a flag.",
+      "test_code": "import click\n\ndef test_bug():\n    @click.command()\n    @click.option(\"--name\", is_flag=False, flag_value=\"Flag\", default=\"Default\")\n    def hello(name):\n        click.echo(f\"Hello, {name}!\")\n\n    result = hello.main(['--name'], standalone_mode=False)\n    assert result == 0\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    result = hello.main(['--name'], standalone_mode=False)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/core.py:1405: in main\n    with self.make_context(prog_name, args, **extra) as ctx:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/core.py:1216: in make_context\n    self.parse_args(ctx, args)\nsrc/click/core.py:1224: in parse_args\n    opts, args, param_order = parser.parse_args(args=args)\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/parser.py:305: in parse_args\n    self._process_args_for_options(state)\nsrc/click/parser.py:332: in _process_args_for_options\n    self._process_opts(arg, state)\nsrc/click/parser.py:484: in _process_opts\n    self._match_long_opt(norm_long_opt, explicit_value, state)\nsrc/click/parser.py:377: in _match_long_opt\n    value = self._get_value_from_state(opt, option, state)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/click/parser.py:441: in _get_value_from_state\n    raise BadOptionUsage(\nE   click.exceptions.BadOptionUsage: Option '--name' requires an argument.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - click.exceptions.BadOptionUsage: Option '--nam...\n1 failed in 0.84s\n",
+      "match": false,
+      "reason": "It failed with click, but the bug is SystemExit. Look for a different cause."
+    }
+  ]
+}

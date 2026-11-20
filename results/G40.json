@@ -1,0 +1,43 @@
+{
+  "bug": "G40",
+  "issue": "https://github.com/marshmallow-code/marshmallow/issues/2249",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/marshmallow/fields.py",
+    "src/marshmallow/validate.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 33,
+  "tries": [
+    {
+      "guess": "The URL validator regex requires a hostname/domain part after the scheme, so file URLs without a host (e.g. file:///path) fail validation.",
+      "test_code": "import marshmallow as mm\n\ndef test_bug():\n    class LOL(mm.Schema):\n        url = mm.fields.Url(schemes={'file'})\n    \n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n    assert result == {'url': 'file:///var/storage/somefile.zip'}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:789: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:996: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'url': ['Not a valid URL.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'url'...\n1 failed in 0.50s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The URL validator regex does not allow file URLs without a host (e.g., file:///path) because it expects a netloc component with a domain, localhost, or IP address following the scheme.",
+      "test_code": "import marshmallow as mm\n\nclass LOL(mm.Schema):\n    url = mm.fields.Url(schemes={'file'})\n\ndef test_bug():\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n    assert result == {'url': 'file:///var/storage/somefile.zip'}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:789: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:996: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'url': ['Not a valid URL.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'url'...\n1 failed in 0.52s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The URL validator regex does not allow file URLs without a host (such as file:///path) because absolute_part mandates a netloc with domain, localhost, or IP.",
+      "test_code": "import marshmallow as mm\n\nclass LOL(mm.Schema):\n    url = mm.fields.Url(schemes={'file'})\n\ndef test_bug():\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n    assert result == {'url': 'file:///var/storage/somefile.zip'}\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:789: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:996: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'url': ['Not a valid URL.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'url'...\n1 failed in 0.43s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The URL validator regex requires a host part after the scheme, failing to match file URLs like file:///path that lack a host.",
+      "test_code": "import marshmallow as mm\n\nclass LOL(mm.Schema):\n    url = mm.fields.Url(schemes={'file'})\n\ndef test_bug():\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n    assert result['url'] == 'file:///var/storage/somefile.zip'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    result = LOL().load({'url': 'file:///var/storage/somefile.zip'})\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/schema.py:789: in load\n    return self._do_load(\nsrc/marshmallow/schema.py:996: in _do_load\n    raise exc\nE   marshmallow.exceptions.ValidationError: {'url': ['Not a valid URL.']}\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: {'url'...\n1 failed in 0.49s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

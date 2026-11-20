@@ -1,0 +1,24 @@
+{
+  "bug": "G139",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/322",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/sql.py",
+    "sqlparse/keywords.py",
+    "examples/extract_table_names.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 54,
+  "tries": [
+    {
+      "guess": "CONCURRENTLY is not treated as a keyword or handled properly in CREATE INDEX statements, causing 'CONCURRENTLY name' to be parsed as a single Identifier.",
+      "test_code": "import sqlparse\nfrom sqlparse.sql import Identifier\n\n\ndef test_bug():\n    sql = 'CREATE INDEX CONCURRENTLY idx_name ON table_name (column_name);'\n    parsed = sqlparse.parse(sql)[0]\n    \n    # Find identifiers in the parsed statement\n    identifiers = [token for token in parsed.tokens if isinstance(token, Identifier)]\n    \n    # 'CONCURRENTLY' should be parsed as a keyword, so the index name 'idx_name'\n    # should be its own Identifier, not 'CONCURRENTLY idx_name'.\n    for ident in identifiers:\n        assert ident.get_real_name() != 'CONCURRENTLY'\n        assert 'CONCURRENTLY' not in ident.value.upper()\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:15: in test_bug\n    assert ident.get_real_name() != 'CONCURRENTLY'\nE   AssertionError: assert 'CONCURRENTLY' != 'CONCURRENTLY'\nE    +  where 'CONCURRENTLY' = get_real_name()\nE    +    where get_real_name = <Identifier 'CONCUR...' at 0x7C0A76318440>.get_real_name\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'CONCURRENTLY' != 'CONC...\n1 failed in 1.92s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.13s\n"
+    }
+  ]
+}

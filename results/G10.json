@@ -1,0 +1,23 @@
+{
+  "bug": "G10",
+  "issue": "https://github.com/more-itertools/more-itertools/issues/1293",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "more_itertools/more.py",
+    "more_itertools/recipes.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 27,
+  "tries": [
+    {
+      "guess": "Repeatedly calling seekable.peek() with maxlen=0 prepends a new chain around the source iterator every time instead of reusing a single lookahead slot.",
+      "test_code": "import tracemalloc\nfrom more_itertools import seekable\n\ndef test_bug():\n    s = seekable(range(3), maxlen=0)\n    tracemalloc.start()\n    s.peek()\n    baseline = tracemalloc.get_traced_memory()[0]\n    for _ in range(5000):\n        assert s.peek() == 0\n    diff = tracemalloc.get_traced_memory()[0] - baseline\n    tracemalloc.stop()\n    # Memory growth should be negligible if no nested chain/iterators accumulate\n    assert diff < 50000\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert s.peek() == 0\nE   assert 1 == 0\nE    +  where 1 = peek()\nE    +    where peek = <more_itertools.more.seekable object at 0x776f7a4c7d70>.peek\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 1 == 0\n1 failed in 0.43s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.28s\n"
+    }
+  ]
+}

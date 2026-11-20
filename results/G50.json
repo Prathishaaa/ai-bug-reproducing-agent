@@ -1,0 +1,38 @@
+{
+  "bug": "G50",
+  "issue": "https://github.com/Python-Markdown/markdown/issues/1694",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "markdown/core.py",
+    "markdown/blockprocessors.py",
+    "markdown/inlinepatterns.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 78,
+  "tries": [
+    {
+      "guess": "Unclosed emphasis sequences like '***' leave unmatched stack entries that cause subsequent emphasis matching logic to miscalculate or truncate the text.",
+      "test_code": "import markdown\n\ndef test_bug():\n    res = markdown.markdown('***l* * **e**')\n    assert 'e' in res\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.52s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Unclosed emphasis sequences with three asterisks consume fewer characters than expected, leaving trailing unmatched characters that corrupt later parsing.",
+      "test_code": "import markdown\n\ndef test_bug():\n    res = markdown.markdown('***l* * **e**')\n    assert 'e' in res\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.36s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "When an unclosed sequence of three or more asterisks appears, the delimiter stack processing logic incorrectly handles remaining unmatched counts, causing characters to be dropped or misaligned during element building.",
+      "test_code": "import markdown\n\ndef test_bug():\n    res = markdown.markdown('***l* * **e**')\n    assert res == '<p><strong><em>l</em> * </strong>e**</p>'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert res == '<p><strong><em>l</em> * </strong>e**</p>'\nE   AssertionError: assert '<p>**<em>l</...strong>**</p>' == '<p><strong><...trong>e**</p>'\nE     \nE     - <p><strong><em>l</em> * </strong>e**</p>\nE     ?    ^^^^^^^^            -         -\nE     + <p>**<em>l</em> <strong>*</strong>**</p>\nE     ?    ^^           ++++++++\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '<p>**<em>l</...strong>...\n1 failed in 0.48s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert res == '<p><strong><em>l</em> * </strong>e**</p>'\nE   AssertionError: assert '<p>**<em>l</...</strong></p>' == '<p><strong><...trong>e**</p>'\nE     \nE     - <p><strong><em>l</em> * </strong>e**</p>\nE     + <p>**<em>l</em> * <strong>e</strong></p>\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '<p>**<em>l</...</stron...\n1 failed in 0.44s\n"
+    }
+  ]
+}

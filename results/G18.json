@@ -1,0 +1,44 @@
+{
+  "bug": "G18",
+  "issue": "https://github.com/astanin/python-tabulate/issues/307",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate/__init__.py",
+    "test/test_regression.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 65,
+  "tries": [
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid \\escape: line 2 column 294 (char 294)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid \\escape: line 2 column 270 (char 270)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid \\escape: line 2 column 255 (char 255)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    },
+    {
+      "guess": "(bad answer from Gemini)",
+      "test_code": "",
+      "output": "Not valid JSON: Invalid \\escape: line 2 column 235 (char 235)",
+      "match": false,
+      "reason": "Your answer was not valid JSON. Reply with only the JSON."
+    }
+  ]
+}

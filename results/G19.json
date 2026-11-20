@@ -1,0 +1,24 @@
+{
+  "bug": "G19",
+  "issue": "https://github.com/astanin/python-tabulate/issues/59",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate/__init__.py",
+    "test/test_input.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 30,
+  "tries": [
+    {
+      "guess": "Tabulate doesn't have a parameter to control header alignment independently or align headers using stralign/colalign correctly.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    table = [['spam', 41.9999], ['eggs', '451.0']]\n    headers = ['strings', 'numbers']\n    result = tabulate.tabulate(table, headers, tablefmt='plain', stralign='center')\n    expected = '\\n'.join(['  strings      numbers  ', 'spam         41.9999', 'eggs        451'])\n    assert result.splitlines()[0] == '  strings      numbers  '\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    assert result.splitlines()[0] == '  strings      numbers  '\nE   AssertionError: assert ' strings     numbers' == '  strings      numbers  '\nE     \nE     -   strings      numbers  \nE     ? -             -       --\nE     +  strings     numbers\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ' strings     numbers' ...\n1 failed in 0.30s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    assert result.splitlines()[0] == '  strings      numbers  '\nE   AssertionError: assert ' strings     numbers' == '  strings      numbers  '\nE     \nE     -   strings      numbers  \nE     ? -             -       --\nE     +  strings     numbers\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ' strings     numbers' ...\n1 failed in 0.28s\n"
+    }
+  ]
+}

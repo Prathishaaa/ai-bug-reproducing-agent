@@ -1,0 +1,44 @@
+{
+  "bug": "G39",
+  "issue": "https://github.com/marshmallow-code/marshmallow/issues/2870",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/marshmallow/validate.py",
+    "src/marshmallow/fields.py",
+    "examples/package_json_example.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 33,
+  "tries": [
+    {
+      "guess": "marshmallow.validate.URL does not normalize or lowercase the custom schemes provided in the schemes parameter, causing case mismatch with the lowercased parsed scheme.",
+      "test_code": "import pytest\nfrom marshmallow.validate import URL\nfrom marshmallow import ValidationError\n\ndef test_bug():\n    validator = URL(schemes=[\"A\"])\n    assert validator(\"A://example.com\") == \"A://example.com\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    assert validator(\"A://example.com\") == \"A://example.com\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/validate.py:209: in __call__\n    raise ValidationError(message)\nE   marshmallow.exceptions.ValidationError: Not a valid URL.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: Not a ...\n1 failed in 0.93s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "marshmallow.validate.URL treats custom schemes case-sensitively by storing the user-provided schemes list as-is instead of lowercasing them, causing validation to fail when mixed-case or uppercase schemes are passed.",
+      "test_code": "from marshmallow.validate import URL\nfrom marshmallow import ValidationError\n\ndef test_bug():\n    validator = URL(schemes=[\"A\"])\n    assert validator(\"A://example.com\") == \"A://example.com\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert validator(\"A://example.com\") == \"A://example.com\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/validate.py:209: in __call__\n    raise ValidationError(message)\nE   marshmallow.exceptions.ValidationError: Not a valid URL.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: Not a ...\n1 failed in 0.73s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "marshmallow.validate.URL does not lowercase the custom schemes provided in the schemes parameter during initialization, causing a case mismatch when validating a URL with an uppercase scheme.",
+      "test_code": "from marshmallow.validate import URL\n\n\ndef test_bug():\n    validator = URL(schemes=[\"A\"])\n    assert validator(\"A://example.com\") == \"A://example.com\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert validator(\"A://example.com\") == \"A://example.com\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/validate.py:209: in __call__\n    raise ValidationError(message)\nE   marshmallow.exceptions.ValidationError: Not a valid URL.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: Not a ...\n1 failed in 0.59s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "URL validator treats custom schemes case-sensitively because schemes are not lowercased during initialization.",
+      "test_code": "import pytest\nfrom marshmallow.validate import URL\nfrom marshmallow import ValidationError\n\ndef test_bug():\n    validator = URL(schemes=[\"A\"])\n    assert validator(\"A://example.com\") == \"A://example.com\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    assert validator(\"A://example.com\") == \"A://example.com\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/validate.py:209: in __call__\n    raise ValidationError(message)\nE   marshmallow.exceptions.ValidationError: Not a valid URL.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - marshmallow.exceptions.ValidationError: Not a ...\n1 failed in 0.60s\n",
+      "match": false,
+      "reason": "It failed with marshmallow, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

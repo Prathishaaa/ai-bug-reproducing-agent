@@ -1,0 +1,31 @@
+{
+  "bug": "G16",
+  "issue": "https://github.com/astanin/python-tabulate/issues/173",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate/__init__.py",
+    "test/test_regression.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 64,
+  "tries": [
+    {
+      "guess": "Tabulate does not support tabular data directly from a JSON string or loaded JSON data because it expects a list of dicts or list of lists rather than automatically parsing JSON inputs.",
+      "test_code": "import json\nfrom tabulate import tabulate\n\ndef test_bug():\n    json_data = '''[\n        {\n            \"column1\": \"data\",\n            \"column2\": 123,\n            \"column3\": true,\n            \"column4\": null\n        },\n        {\n            \"column1\": \"Longer string\",\n            \"column2\": 123,\n            \"column3\": true,\n            \"column4\": null\n        }\n    ]'''\n    parsed_data = json.loads(json_data)\n    result = tabulate(parsed_data, headers=\"keys\", tablefmt=\"github\")\n    expected = \"\\n\".join([\n        \"| column1       |   column2 | column3   | column4   |\",\n        \"|:--------------|----------:|:----------|:----------|\",\n        \"| data          |       123 | True      |           |\",\n        \"| Longer string |       123 | True      |           |\"\n    ])\n    assert result == expected\n",
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0\nrootdir: /app\nconfigfile: pyproject.toml\nplugins: platformdirs-4.14.7, timeout-2.4.0\ntimeout: 20.0s\ntimeout method: signal\ntimeout func_only: False\ncollected 1 item\n\ntest_bug.py .                                                            [100%]\n\n============================== 1 passed in 0.28s ===============================\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Tabulate treats a list of dictionaries where headers='keys' is not specified or when passing json data where keys are extracted expects headers='keys' or similar handling, but list of dicts without headers='keys' fails to tabulate keys as column headers automatically.",
+      "test_code": "import json\nfrom tabulate import tabulate\n\ndef test_bug():\n    data = json.loads('''\n    [\n        {\n            \"column1\": \"data\",\n            \"column2\": 123,\n            \"column3\": true,\n            \"column4\": null\n        }\n    ]\n    ''')\n    result = tabulate(data, tablefmt=\"github\")\n    expected = \"| column1   |   column2 | column3   | column4   |\\n|:----------|----------:|:----------|:----------|\\n| data      |       123 | True      |           |\"\n    assert result == expected\n",
+      "output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0\nrootdir: /app\nconfigfile: pyproject.toml\nplugins: platformdirs-4.14.7, timeout-2.4.0\ntimeout: 20.0s\ntimeout method: signal\ntimeout func_only: False\ncollected 1 item\n\ntest_bug.py F                                                            [100%]\n\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert result == expected\nE   AssertionError: assert '|:-----|----...3 | True |  |' == '| column1   ...|           |'\nE     \nE     + |:-----|----:|:-----|:-|\nE     + | data | 123 | True |  |\nE     - | column1   |   column2 | column3   | column4   |\nE     - |:----------|----------:|:----------|:----------|\nE     - | data      |       123 | True      |           |\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '|:-----|----...3 | Tru...\n============================== 1 failed in 0.35s ===============================\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "============================= test session starts ==============================\nplatform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0\nrootdir: /app\nconfigfile: pyproject.toml\nplugins: platformdirs-4.14.7, timeout-2.4.0\ntimeout: 20.0s\ntimeout method: signal\ntimeout func_only: False\ncollected 1 item\n\ntest_bug.py F                                                            [100%]\n\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert result == expected\nE   AssertionError: assert '|:-----|----...3 | True |  |' == '| column1   ...|           |'\nE     \nE     + |:-----|----:|:-----|:-|\nE     + | data | 123 | True |  |\nE     - | column1   |   column2 | column3   | column4   |\nE     - |:----------|----------:|:----------|:----------|\nE     - | data      |       123 | True      |           |\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '|:-----|----...3 | Tru...\n============================== 1 failed in 0.34s ===============================\n"
+    }
+  ]
+}

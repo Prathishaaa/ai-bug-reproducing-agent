@@ -1,0 +1,23 @@
+{
+  "bug": "G2",
+  "issue": "https://github.com/python-humanize/humanize/issues/152",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/humanize/time.py",
+    "src/humanize/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 37,
+  "tries": [
+    {
+      "guess": "naturaldate converts datetime objects to datetime.date via attribute access (value.year, value.month, value.day) without taking timezone offsets into account, causing incorrect day comparisons in non-UTC timezones.",
+      "test_code": "import datetime as dt\nimport humanize\nfrom freezegun import freeze_time\n\ndef test_bug():\n    utc = dt.timezone.utc\n    aedt = dt.timezone(dt.timedelta(hours=11))\n    cest = dt.timezone(dt.timedelta(hours=2))\n    edt = dt.timezone(dt.timedelta(hours=-4))\n    pdt = dt.timezone(dt.timedelta(hours=-7))\n    future = dt.datetime(2023, 10, 16, hour=6, tzinfo=utc)\n\n    with freeze_time('2023-10-15 23:00:00+00:00'):\n        assert humanize.naturaldate(future) == \"tomorrow\"\n        assert humanize.naturaldate(future.astimezone(aedt)) == \"today\"\n        assert humanize.naturaldate(future.astimezone(cest)) == \"today\"\n        assert humanize.naturaldate(future.astimezone(edt)) == \"tomorrow\"\n        assert humanize.naturaldate(future.astimezone(pdt)) == \"today\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:15: in test_bug\n    assert humanize.naturaldate(future.astimezone(aedt)) == \"today\"\nE   AssertionError: assert 'tomorrow' == 'today'\nE     \nE     - today\nE     + tomorrow\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'tomorrow' == 'today'\n1 failed in 0.76s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.56s\n"
+    }
+  ]
+}

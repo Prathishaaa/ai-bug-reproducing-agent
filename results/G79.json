@@ -1,0 +1,24 @@
+{
+  "bug": "G79",
+  "issue": "https://github.com/python-attrs/attrs/issues/1427",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/attr/_make.py",
+    "src/attr/_next_gen.py",
+    "src/attr/_cmp.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 85,
+  "tries": [
+    {
+      "guess": "The generated __init__ script incorrectly passes default values to `__attrs_pre_init__` as keyword arguments instead of passing the initialized values.",
+      "test_code": "import attrs\n\n@attrs.define\nclass Example:\n    val1: int\n    val2: int = 100\n    val3: dict = attrs.field(factory=dict)\n    val4: int = attrs.field(kw_only=True)\n    val5: int = attrs.field(default=100, kw_only=True)\n\n    def __attrs_pre_init__(self, val1, val2, val3, val4, val5):\n        assert val1 == 200\n        assert val2 == 200\n        assert val3 == {\"blah\": \"blah\"}\n        assert val4 == 200\n        assert val5 == 200\n\ndef test_bug():\n    Example(val1=200, val2=200, val3={\"blah\": \"blah\"}, val4=200, val5=200)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:19: in test_bug\n    Example(val1=200, val2=200, val3={\"blah\": \"blah\"}, val4=200, val5=200)\n<attrs generated methods test_bug.Example>:27: in __init__\n    self.__attrs_pre_init__(val1, val2=attr_dict['val2'].default, val3=NOTHING, val4=val4, val5=val5)\ntest_bug.py:13: in __attrs_pre_init__\n    assert val2 == 200\nE   assert 100 == 200\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 100 == 200\n1 failed in 0.42s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.16s\n"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "bug": "G14",
+  "issue": "https://github.com/more-itertools/more-itertools/issues/849",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "more_itertools/more.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 65,
+  "tries": [
+    {
+      "guess": "The peekable class needs to define `__class_getitem__` to support generic type hinting like `peekable[str]`.",
+      "test_code": "import more_itertools\n\ndef test_bug():\n    def f(it: more_itertools.peekable[str]):\n        pass\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    def f(it: more_itertools.peekable[str]):\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: type 'peekable' is not subscriptable\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: type 'peekable' is not subscriptable\n1 failed in 0.41s\n",
+      "match": false,
+      "reason": "It failed with the right error, but not inside the project's code. Call the project's code."
+    },
+    {
+      "guess": "The peekable class needs a __class_getitem__ method to support generic type hints like peekable[str].",
+      "test_code": "import more_itertools\n\ndef test_bug():\n    def f(it: more_itertools.peekable[str]):\n        pass\n    assert f\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    def f(it: more_itertools.peekable[str]):\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: type 'peekable' is not subscriptable\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: type 'peekable' is not subscriptable\n1 failed in 0.27s\n",
+      "match": false,
+      "reason": "It failed with the right error, but not inside the project's code. Call the project's code."
+    },
+    {
+      "guess": "The peekable class lacks a __class_getitem__ class method, causing TypeError when trying to use type hints like peekable[str].",
+      "test_code": "import more_itertools\n\ndef test_bug():\n    def f(it: more_itertools.peekable[str]):\n        pass\n    f(more_itertools.peekable([1, 2, 3]))\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    def f(it: more_itertools.peekable[str]):\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: type 'peekable' is not subscriptable\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: type 'peekable' is not subscriptable\n1 failed in 0.29s\n",
+      "match": false,
+      "reason": "It failed with the right error, but not inside the project's code. Call the project's code."
+    },
+    {
+      "guess": "The peekable class needs a __class_getitem__ method to support generic type hints like peekable[str].",
+      "test_code": "import more_itertools\n\ndef test_bug():\n    def f(it: more_itertools.peekable[str]):\n        pass\n    f(more_itertools.peekable([1, 2, 3]))\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    def f(it: more_itertools.peekable[str]):\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: type 'peekable' is not subscriptable\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: type 'peekable' is not subscriptable\n1 failed in 0.20s\n",
+      "match": false,
+      "reason": "It failed with the right error, but not inside the project's code. Call the project's code."
+    }
+  ]
+}

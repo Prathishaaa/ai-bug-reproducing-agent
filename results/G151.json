@@ -1,0 +1,23 @@
+{
+  "bug": "G151",
+  "issue": "https://github.com/python-validators/validators/issues/296",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/validators/url.py",
+    "src/validators/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 63,
+  "tries": [
+    {
+      "guess": "The query and fragment validation functions in url.py use overly restrictive regular expressions and checks that fail on valid URLs containing parameters starting with hyphens or complex paths/fragments with slashes.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.url('https://vydrica.com/ponuka-bytov/#3d-navigator/')\n    assert validators.url('https://www.karpatium.sk/ponuka-byvania#/budova/C2/podlazie/3/byt/96')\n    assert validators.url('https://moldaupark.cz/img/reality/262/ddca52d8e0680aa3efe02416daf30eab/vamax800/25.jpg?-62169987208')\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.url('https://vydrica.com/ponuka-bytov/#3d-navigator/')\nE   AssertionError: assert ValidationError(func=url, args={'value': 'https://vydrica.com/ponuka-bytov/#3d-navigator/'})\nE    +  where ValidationError(func=url, args={'value': 'https://vydrica.com/ponuka-bytov/#3d-navigator/'}) = <function url at 0x7d0d915ff7e0>('https://vydrica.com/ponuka-bytov/#3d-navigator/')\nE    +    where <function url at 0x7d0d915ff7e0> = validators.url\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 2.18s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert validators.url('https://moldaupark.cz/img/reality/262/ddca52d8e0680aa3efe02416daf30eab/vamax800/25.jpg?-62169987208')\nE   assert ValidationError(func=url, args={'reason': \"bad query field: '-62169987208'\", 'value': 'https://moldaupark.cz/img/reality/262/ddca52d8e0680aa3efe02416daf30eab/vamax800/25.jpg?-62169987208'})\nE    +  where ValidationError(func=url, args={'reason': \"bad query field: '-62169987208'\", 'value': 'https://moldaupark.cz/img/reality/262/ddca52d8e0680aa3efe02416daf30eab/vamax800/25.jpg?-62169987208'}) = <function url at 0x7725ca31b6a0>('https://moldaupark.cz/img/reality/262/ddca52d8e0680aa3efe02416daf30eab/vamax800/25.jpg?-62169987208')\nE    +    where <function url at 0x7725ca31b6a0> = validators.url\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert ValidationError(func=url, args={'reason...\n1 failed in 1.65s\n"
+    }
+  ]
+}

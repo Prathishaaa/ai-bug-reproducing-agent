@@ -1,0 +1,24 @@
+{
+  "bug": "G137",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/632",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/cli.py",
+    "sqlparse/filters/__init__.py",
+    "examples/extract_table_names.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 48,
+  "tries": [
+    {
+      "guess": "Statement.get_type() does not skip comments when looking for the first significant token after WITH, returning UNKNOWN instead of SELECT.",
+      "test_code": "import sqlparse\n\n\ndef test_bug():\n    query, = sqlparse.parse(\"\"\"\n    WITH A AS (),\n              -- A comment about the B subquery...\n              B AS ()\n    SELECT * FROM B\n    \"\"\")\n    assert query.get_type() == 'SELECT'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert query.get_type() == 'SELECT'\nE   AssertionError: assert 'UNKNOWN' == 'SELECT'\nE     \nE     - SELECT\nE     + UNKNOWN\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'UNKNOWN' == 'SELECT'\n1 failed in 1.76s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.15s\n"
+    }
+  ]
+}

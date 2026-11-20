@@ -1,0 +1,24 @@
+{
+  "bug": "G91",
+  "issue": "https://github.com/jd/tenacity/issues/613",
+  "error_to_find": "KeyError",
+  "files_picked": [
+    "tenacity/__init__.py",
+    "tenacity/retry.py",
+    "tenacity/asyncio/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 52,
+  "tries": [
+    {
+      "guess": "Accessing statistics via foo.retry.statistics raises a KeyError because foo.retry points to the original Retrying instance rather than the per-invocation copy where statistics are populated.",
+      "test_code": "import pytest\nfrom tenacity import retry, stop_after_attempt\n\n@retry(stop=stop_after_attempt(3))\ndef foo():\n    attempt = foo.retry.statistics['attempt_number']\n    if attempt < 3:\n        raise Exception(\"Failed\")\n\ndef test_bug():\n    foo()\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in foo\n    attempt = foo.retry.statistics['attempt_number']\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   KeyError: 'attempt_number'\n\nThe above exception was the direct cause of the following exception:\ntest_bug.py:11: in test_bug\n    foo()\ntenacity/__init__.py:365: in wrapped_f\n    return copy(f, *args, **kw)\n           ^^^^^^^^^^^^^^^^^^^^\ntenacity/__init__.py:505: in __call__\n    do = self.iter(retry_state=retry_state)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntenacity/__init__.py:406: in iter\n    result = action(retry_state)\n             ^^^^^^^^^^^^^^^^^^^\ntenacity/__init__.py:449: in exc_check\n    raise retry_exc from fut.exception()\nE   tenacity.RetryError: RetryError[<Future at 0x78982f6673b0 state=finished raised KeyError>]\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - tenacity.RetryError: RetryError[<Future at 0x7...\n1 failed in 0.67s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.42s\n"
+    }
+  ]
+}

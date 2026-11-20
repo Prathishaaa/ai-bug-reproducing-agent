@@ -1,0 +1,22 @@
+{
+  "bug": "G32",
+  "issue": "https://github.com/jaraco/inflect/issues/231",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "inflect/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 40,
+  "tries": [
+    {
+      "guess": "Capitalized compound terms like 'Old technology' fail to pluralize correctly because the recasing or noun chunking logic does not handle capitalized multi-word phrases properly.",
+      "test_code": "import inflect\n\n\ndef test_bug():\n    _infl = inflect.engine()\n    assert _infl.plural(\"Old technology\") == \"Old technologies\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert _infl.plural(\"Old technology\") == \"Old technologies\"\nE   AssertionError: assert 'Old technologys' == 'Old technologies'\nE     \nE     - Old technologies\nE     ?              ^^\nE     + Old technologys\nE     ?              ^\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'Old technologys' == 'O...\n1 failed in 2.99s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 3.05s\n"
+    }
+  ]
+}

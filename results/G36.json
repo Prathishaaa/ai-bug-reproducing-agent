@@ -1,0 +1,31 @@
+{
+  "bug": "G36",
+  "issue": "https://github.com/marshmallow-code/marshmallow/issues/2900",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/marshmallow/fields.py",
+    "examples/package_json_example.py",
+    "examples/inflection_example.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 30,
+  "tries": [
+    {
+      "guess": "Setting required=True on a fields.Constant sets load_default, which triggers a ValueError in Field.__init__ because load_default must not be set for required fields.",
+      "test_code": "import pytest\nfrom marshmallow import Schema, fields\n\nclass ConstantSchema(Schema):\n    const_field = fields.Constant(\"foo\", required=True)\n\ndef test_bug():\n    schema = ConstantSchema()\n    result = schema.load({})\n    assert result == {\"const_field\": \"foo\"}\n",
+      "output": "\n==================================== ERRORS ====================================\n_________________________ ERROR collecting test_bug.py _________________________\ntest_bug.py:4: in <module>\n    class ConstantSchema(Schema):\ntest_bug.py:5: in ConstantSchema\n    const_field = fields.Constant(\"foo\", required=True)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/marshmallow/fields.py:2079: in __init__\n    super().__init__(**kwargs)\nsrc/marshmallow/fields.py:217: in __init__\n    raise ValueError(\"'load_default' must not be set for required fields.\")\nE   ValueError: 'load_default' must not be set for required fields.\n=========================== short test summary info ============================\nERROR test_bug.py - ValueError: 'load_default' must not be set for required f...\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.98s\n",
+      "match": false,
+      "reason": "Your test could not run (a typo, a bad import, or it got stuck). Fix the test itself."
+    },
+    {
+      "guess": "fields.Constant sets load_default automatically in __init__, but Field.__init__ raises a ValueError if required=True and load_default is set.",
+      "test_code": "from marshmallow import Schema, fields\n\ndef test_bug():\n    try:\n        fields.Constant(\"foo\", required=True)\n    except ValueError as e:\n        raise AssertionError(f\"Constant with required=True raised ValueError: {e}\")\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    fields.Constant(\"foo\", required=True)\nsrc/marshmallow/fields.py:2079: in __init__\n    super().__init__(**kwargs)\nsrc/marshmallow/fields.py:217: in __init__\n    raise ValueError(\"'load_default' must not be set for required fields.\")\nE   ValueError: 'load_default' must not be set for required fields.\n\nDuring handling of the above exception, another exception occurred:\ntest_bug.py:7: in test_bug\n    raise AssertionError(f\"Constant with required=True raised ValueError: {e}\")\nE   AssertionError: Constant with required=True raised ValueError: 'load_default' must not be set for required fields.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: Constant with required=True ra...\n1 failed in 0.77s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.55s\n"
+    }
+  ]
+}

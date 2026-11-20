@@ -1,0 +1,44 @@
+{
+  "bug": "G99",
+  "issue": "https://github.com/pyparsing/pyparsing/issues/279",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "pyparsing/core.py",
+    "pyparsing_archive.py",
+    "examples/dfmparse.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 108,
+  "tries": [
+    {
+      "guess": "A CaselessCloseMatch class needs to be added by subclassing CloseMatch and comparing characters using lower case.",
+      "test_code": "import pyparsing as pp\n\ndef test_bug():\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n    res = patt.parse_string(\"atcatcgaatgga\")\n    assert res[0] == \"atcatcgaatgga\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n           ^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'pyparsing' has no attribute 'CaselessCloseMatch'\n=============================== warnings summary ===============================\npyparsing/core.py:23\n  /app/pyparsing/core.py:23: DeprecationWarning: module 'sre_constants' is deprecated\n    import sre_constants\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: module 'pyparsing' has no attr...\n1 failed, 1 warning in 0.51s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "The bug is that pyparsing lacks a CaselessCloseMatch class which performs case-insensitive close-matching, so adding it as a subclass of CloseMatch will fix the issue.",
+      "test_code": "import pyparsing as pp\n\ndef test_bug():\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n    res = patt.parse_string(\"atcatcgaatgga\")\n    assert res.original == \"ATCATCGAATGGA\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n           ^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'pyparsing' has no attribute 'CaselessCloseMatch'\n=============================== warnings summary ===============================\npyparsing/core.py:23\n  /app/pyparsing/core.py:23: DeprecationWarning: module 'sre_constants' is deprecated\n    import sre_constants\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: module 'pyparsing' has no attr...\n1 failed, 1 warning in 0.44s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "pyparsing does not currently implement a CaselessCloseMatch class combining CloseMatch and case-insensitive matching capabilities.",
+      "test_code": "import pyparsing as pp\n\ndef test_bug():\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n    res = patt.parse_string(\"atcatcgaatgga\")\n    assert res[0] == \"atcatcgaatgga\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    patt = pp.CaselessCloseMatch(\"ATCATCGAATGGA\")\n           ^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'pyparsing' has no attribute 'CaselessCloseMatch'\n=============================== warnings summary ===============================\npyparsing/core.py:23\n  /app/pyparsing/core.py:23: DeprecationWarning: module 'sre_constants' is deprecated\n    import sre_constants\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: module 'pyparsing' has no attr...\n1 failed, 1 warning in 0.65s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "pyparsing does not implement CaselessCloseMatch to allow case-insensitive close matching.",
+      "test_code": "import pyparsing as pp\n\ndef test_bug():\n    patt = pp.CaselessCloseMatch(\"atcatcgaatgga\")\n    res = patt.parse_string(\"ATCATCGAAXGGA\")\n    assert res[0] == \"ATCATCGAAXGGA\"\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    patt = pp.CaselessCloseMatch(\"atcatcgaatgga\")\n           ^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'pyparsing' has no attribute 'CaselessCloseMatch'\n=============================== warnings summary ===============================\npyparsing/core.py:23\n  /app/pyparsing/core.py:23: DeprecationWarning: module 'sre_constants' is deprecated\n    import sre_constants\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: module 'pyparsing' has no attr...\n1 failed, 1 warning in 0.60s\n",
+      "match": false,
+      "reason": "It failed with AttributeError, but the bug is AssertionError. Look for a different cause."
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "bug": "G138",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/562",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/formatter.py",
+    "sqlparse/cli.py",
+    "examples/extract_table_names.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 52,
+  "tries": [
+    {
+      "guess": "ReindentFilter strips whitespace inappropriately between an EXTRACT 'from' keyword and the following function expression when reindenting.",
+      "test_code": "import sqlparse\n\n\ndef test_bug():\n    sql = \"SELECT extract(HOUR from from_unixtime(hour_ts) AT TIME ZONE 'America/Los_Angeles') from table\"\n    formatted = sqlparse.format(sql, reindent=True)\n    assert 'from from_unixtime' in formatted\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    assert 'from from_unixtime' in formatted\nE   assert 'from from_unixtime' in \"SELECT extract(HOUR\\n               fromfrom_unixtime(hour_ts) AT TIME ZONE 'America/Los_Angeles')\\nfrom table\"\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 'from from_unixtime' in \"SELECT extract...\n1 failed in 1.81s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.08s\n"
+    }
+  ]
+}

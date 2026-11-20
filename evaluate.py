@@ -2,6 +2,7 @@
 import csv
 import json
 import os
+import subprocess
 
 from agent import reproduce
 
@@ -53,5 +54,7 @@ if __name__ == "__main__":
                 reproduce(bug["id"])
             except Exception as error:
                 print(f"{bug['id']} could not run: {error}. It will be tried again next time.")
+            # Delete this bug's room to save disk. The result is saved, and the room is rebuilt if needed.
+            subprocess.run(["docker", "rmi", "-f", "bug-box-" + bug["id"].lower()], capture_output=True)
     finally:
         write_summary(bugs)  # also runs if the Gemini limit stops us early

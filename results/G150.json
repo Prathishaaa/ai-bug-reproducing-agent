@@ -1,0 +1,44 @@
+{
+  "bug": "G150",
+  "issue": "https://github.com/python-validators/validators/issues/298",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/validators/between.py",
+    "src/validators/length.py",
+    "src/validators/__init__.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 95,
+  "tries": [
+    {
+      "guess": "The between validator incorrectly evaluates truthiness of the value using 'if not value:', which causes the number 0 to be treated as falsy and rejected.",
+      "test_code": "import validators\n\n\ndef test_bug():\n    assert validators.between(0, min_val=0, max_val=5) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert validators.between(0, min_val=0, max_val=5) is True\nE   AssertionError: assert ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) is True\nE    +  where ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) = <function between at 0x79e8ae46ba60>(0, min_val=0, max_val=5)\nE    +    where <function between at 0x79e8ae46ba60> = validators.between\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=be...\n1 failed in 4.57s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The between validator checks `if not value:` which causes the number 0 to be considered falsy and incorrectly return a ValidationError.",
+      "test_code": "import validators\n\ndef test_bug():\n    result = validators.between(0, min_val=0, max_val=5)\n    assert result is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert result is True\nE   AssertionError: assert ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) is True\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=be...\n1 failed in 1.70s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The between validator has 'if not value:' which treats 0 as falsy and returns a ValidationError.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.between(0, min_val=0, max_val=5) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.between(0, min_val=0, max_val=5) is True\nE   AssertionError: assert ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) is True\nE    +  where ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) = <function between at 0x7c4fc34c39c0>(0, min_val=0, max_val=5)\nE    +    where <function between at 0x7c4fc34c39c0> = validators.between\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=be...\n1 failed in 1.57s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The between validator incorrectly checks 'if not value:' which treats the number 0 as falsy and fails validation.",
+      "test_code": "import validators\n\ndef test_bug():\n    assert validators.between(0, min_val=0, max_val=5) is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert validators.between(0, min_val=0, max_val=5) is True\nE   AssertionError: assert ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) is True\nE    +  where ValidationError(func=between, args={'value': 0, 'min_val': 0, 'max_val': 5}) = <function between at 0x7ddd2eeab9c0>(0, min_val=0, max_val=5)\nE    +    where <function between at 0x7ddd2eeab9c0> = validators.between\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=be...\n1 failed in 1.39s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

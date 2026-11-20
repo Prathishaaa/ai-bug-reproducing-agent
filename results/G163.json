@@ -1,0 +1,24 @@
+{
+  "bug": "G163",
+  "issue": "https://github.com/falconry/falcon/issues/2671",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "falcon/middleware.py",
+    "falcon/util/uri.py",
+    "falcon/routing/compiled.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 82,
+  "tries": [
+    {
+      "guess": "The default options responder does not check for or populate methods when `on_request` is used, causing an empty Allow header.",
+      "test_code": "import falcon\nfrom falcon import testing\n\nclass ResourceWithOnRequest:\n    def on_request(self, req, resp):\n        if req.method == 'GET':\n            resp.text = 'GET'\n        elif req.method == 'POST':\n            resp.text = 'POST'\n\ndef test_bug():\n    app = falcon.App()\n    app.router_options.default_to_on_request = True\n    app.add_route('/test', ResourceWithOnRequest())\n\n    client = testing.TestClient(app)\n    response = client.simulate_options('/test')\n    assert response.headers.get('Allow') != ''\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:18: in test_bug\n    assert response.headers.get('Allow') != ''\nE   AssertionError: assert '' != ''\nE    +  where '' = get('Allow')\nE    +    where get = CaseInsensitiveDict({'allow': '', 'content-length': '0', 'content-type': 'application/json'}).get\nE    +      where CaseInsensitiveDict({'allow': '', 'content-length': '0', 'content-type': 'application/json'}) = Result<200 OK application/json b''>.headers\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '' != ''\n1 failed in 2.38s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.27s\n"
+    }
+  ]
+}

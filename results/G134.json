@@ -1,0 +1,24 @@
+{
+  "bug": "G134",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/752",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/keywords.py",
+    "sqlparse/sql.py",
+    "sqlparse/engine/grouping.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 104,
+  "tries": [
+    {
+      "guess": "MATERIALIZED is not listed in the KEYWORDS dictionary in keywords.py, so it is not recognized as a keyword.",
+      "test_code": "import sqlparse\n\ndef test_bug():\n    parsed = sqlparse.parse('create materialized view x.y.z as select 1 as id')[0]\n    assert parsed.tokens[2].is_keyword is True\n    assert parsed.tokens[2].normalized == 'MATERIALIZED'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert parsed.tokens[2].is_keyword is True\nE   AssertionError: assert False is True\nE    +  where False = <Identifier 'materi...' at 0x7AB42D8E6DD0>.is_keyword\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert False is True\n1 failed in 2.25s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 1.12s\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "bug": "G93",
+  "issue": "https://github.com/jd/tenacity/issues/476",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "tenacity/retry.py",
+    "tenacity/asyncio/retry.py",
+    "tenacity/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 52,
+  "tries": [
+    {
+      "guess": "Chaining multiple retry_any or retry_all conditions using the bitwise OR/AND operators creates nested retry_any/retry_all objects instead of flattening them into a single object's retries tuple.",
+      "test_code": "from tenacity import retry_if_exception_type, retry_any, retry_all\n\n\ndef test_bug():\n    r1 = retry_if_exception_type(ValueError)\n    r2 = retry_if_exception_type(TypeError)\n    r3 = retry_if_exception_type(KeyError)\n\n    combined = r1 | r2 | r3\n    assert isinstance(combined, retry_any)\n    assert len(combined.retries) == 3\n\n    combined_all = r1 & r2 & r3\n    assert isinstance(combined_all, retry_all)\n    assert len(combined_all.retries) == 3\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:11: in test_bug\n    assert len(combined.retries) == 3\nE   assert 2 == 3\nE    +  where 2 = len((<tenacity.retry.retry_any object at 0x7b11b6d181a0>, <tenacity.retry.retry_if_exception_type object at 0x7b11b6d18110>))\nE    +    where (<tenacity.retry.retry_any object at 0x7b11b6d181a0>, <tenacity.retry.retry_if_exception_type object at 0x7b11b6d18110>) = <tenacity.retry.retry_any object at 0x7b11b6db2c90>.retries\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - assert 2 == 3\n1 failed in 1.07s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.44s\n"
+    }
+  ]
+}

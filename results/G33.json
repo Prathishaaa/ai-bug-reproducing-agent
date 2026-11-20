@@ -1,0 +1,22 @@
+{
+  "bug": "G33",
+  "issue": "https://github.com/jaraco/inflect/issues/172",
+  "error_to_find": "IndexError",
+  "files_picked": [
+    "inflect/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 46,
+  "tries": [
+    {
+      "guess": "engine.postprocess assumes the inflected string has the same number of words as the original input string, causing an IndexError when the inflected string has fewer words.",
+      "test_code": "import inflect\n\n\ndef test_bug():\n    engine = inflect.engine()\n    assert engine.plural(\"I'm only here for a minute, John.\")\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert engine.plural(\"I'm only here for a minute, John.\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ninflect/__init__.py:2454: in plural\n    plural = self.postprocess(\ninflect/__init__.py:2426: in postprocess\n    result[index] = result[index].capitalize()\n                    ^^^^^^^^^^^^^\nE   IndexError: list index out of range\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - IndexError: list index out of range\n1 failed in 3.36s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 2.85s\n"
+    }
+  ]
+}

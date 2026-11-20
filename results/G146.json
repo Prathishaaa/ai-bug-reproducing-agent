@@ -1,0 +1,44 @@
+{
+  "bug": "G146",
+  "issue": "https://github.com/python-validators/validators/issues/481",
+  "error_to_find": "ValidationError",
+  "files_picked": [
+    "src/validators/url.py",
+    "src/validators/hostname.py",
+    "src/validators/uri.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 110,
+  "tries": [
+    {
+      "guess": "The `url` validator fails on `file:///var/www` because the scheme 'file' is not supported in `_validate_scheme` and the netloc/path structure of file URLs does not conform to standard domain/hostname validation.",
+      "test_code": "from validators import url\n\ndef test_bug():\n    assert url(\"file:///var/www\") is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert url(\"file:///var/www\") is True\nE   AssertionError: assert ValidationError(func=url, args={'value': 'file:///var/www'}) is True\nE    +  where ValidationError(func=url, args={'value': 'file:///var/www'}) = url('file:///var/www')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 3.12s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The `file` scheme and its standard path-based netloc are not supported by default in the `url` validator because `file` is missing from `_validate_scheme` and local paths fail hostname validation.",
+      "test_code": "from validators import url\n\ndef test_bug():\n    assert url(\"file:///var/www\") is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert url(\"file:///var/www\") is True\nE   AssertionError: assert ValidationError(func=url, args={'value': 'file:///var/www'}) is True\nE    +  where ValidationError(func=url, args={'value': 'file:///var/www'}) = url('file:///var/www')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 2.80s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The url validator fails to validate file URLs because 'file' scheme is not in _validate_scheme and netloc validation expects a domain/IP rather than a local file system path component.",
+      "test_code": "from validators import url\n\n\ndef test_bug():\n    assert url(\"file:///var/www\") is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    assert url(\"file:///var/www\") is True\nE   AssertionError: assert ValidationError(func=url, args={'value': 'file:///var/www'}) is True\nE    +  where ValidationError(func=url, args={'value': 'file:///var/www'}) = url('file:///var/www')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 2.19s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    },
+    {
+      "guess": "The url validator fails on file:///var/www because the 'file' scheme is not in _validate_scheme and netloc validation fails when parsing local directories like 'var' as hostnames.",
+      "test_code": "from validators import url\n\ndef test_bug():\n    assert url(\"file:///var/www\") is True\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    assert url(\"file:///var/www\") is True\nE   AssertionError: assert ValidationError(func=url, args={'value': 'file:///var/www'}) is True\nE    +  where ValidationError(func=url, args={'value': 'file:///var/www'}) = url('file:///var/www')\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ValidationError(func=ur...\n1 failed in 2.20s\n",
+      "match": false,
+      "reason": "It failed with AssertionError, but the bug is ValidationError. Look for a different cause."
+    }
+  ]
+}

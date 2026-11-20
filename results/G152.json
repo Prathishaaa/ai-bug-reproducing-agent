@@ -1,0 +1,24 @@
+{
+  "bug": "G152",
+  "issue": "https://github.com/pytoolz/toolz/issues/602",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "toolz/itertoolz.py",
+    "toolz/curried/__init__.py",
+    "toolz/sandbox/parallel.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 81,
+  "tries": [
+    {
+      "guess": "partition_all relies on len(seq) to slice the last padding batch, which produces padding tokens when __len__ returns an inaccurate length.",
+      "test_code": "import toolz\n\nclass InaccurateLenSeq:\n    def __init__(self, items, inaccurate_len):\n        self.items = items\n        self.inaccurate_len = inaccurate_len\n    \n    def __iter__(self):\n        return iter(self.items)\n    \n    def __len__(self):\n        return self.inaccurate_len\n\ndef test_bug():\n    seq = InaccurateLenSeq([0, 1, 2, 3, 4], 7)\n    batches = list(toolz.partition_all(10, seq))\n    assert batches == [(0, 1, 2, 3, 4)]\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:17: in test_bug\n    assert batches == [(0, 1, 2, 3, 4)]\nE   AssertionError: assert [(0, 1, 2, 3,..._pad__', ...)] == [(0, 1, 2, 3, 4)]\nE     \nE     At index 0 diff: (0, 1, 2, 3, 4, '__no__pad__', '__no__pad__') != (0, 1, 2, 3, 4)\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert [(0, 1, 2, 3,..._pad__'...\n1 failed in 1.34s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:16: in test_bug\n    batches = list(toolz.partition_all(10, seq))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntoolz/itertoolz.py:737: in partition_all\n    raise LookupError(\nE   LookupError: The sequence passed to `parition_all` has invalid length\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - LookupError: The sequence passed to `parition_...\n1 failed in 2.04s\n"
+    }
+  ]
+}

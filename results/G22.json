@@ -1,0 +1,24 @@
+{
+  "bug": "G22",
+  "issue": "https://github.com/pallets/click/issues/3362",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/click/core.py",
+    "src/click/formatting.py",
+    "src/click/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 36,
+  "tries": [
+    {
+      "guess": "HelpFormatter uses TextWrapper without disabling break_on_hyphens, causing options with hyphens to be incorrectly split across line breaks.",
+      "test_code": "import click\n\n\ndef test_bug():\n    options = [\n        \"--enable-verbose-logging\",\n        \"--output-file-path\",\n        \"--max-retry-count\",\n    ]\n    f = click.HelpFormatter(width=45)\n    f.write_usage(\"program\", \" \".join(options))\n    output = f.getvalue()\n    assert \"--max-\" not in output\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:13: in test_bug\n    assert \"--max-\" not in output\nE   AssertionError: assert '--max-' not in 'Usage: prog...etry-count\\n'\nE     \nE     '--max-' is contained here:\nE       file-path --max-\nE     ?           ++++++\nE                      retry-count\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '--max-' not in 'Usage:...\n1 failed in 0.80s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:13: in test_bug\n    assert \"--max-\" not in output\nE   AssertionError: assert '--max-' not in 'Usage: prog...etry-count\\n'\nE     \nE     '--max-' is contained here:\nE                 --max-retry-count\nE     ?           ++++++\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '--max-' not in 'Usage:...\n1 failed in 0.61s\n"
+    }
+  ]
+}

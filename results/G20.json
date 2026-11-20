@@ -1,0 +1,24 @@
+{
+  "bug": "G20",
+  "issue": "https://github.com/astanin/python-tabulate/issues/130",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "tabulate.py",
+    "test/test_output.py",
+    "test/test_regression.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 25,
+  "tries": [
+    {
+      "guess": "The decimal alignment function _afterpoint incorrectly calculates the decimal point position when commas are used in float formatting.",
+      "test_code": "from tabulate import tabulate\n\ndef test_bug():\n    table = [(\"a\", 3456.321), (\"b\", 982.6513)]\n    result = tabulate(table, floatfmt=\",.2f\")\n    expected = \"\\n\".join([\n        \"a  3,456.32\",\n        \"b    982.65\"\n    ])\n    assert result == expected\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert result == expected\nE   AssertionError: assert '-  ---------...  -----------' == 'a  3,456.32\\nb    982.65'\nE     \nE     + -  -----------\nE       a  3,456.32\nE     - b    982.65\nE     + b       982.65\nE     ?  +++          +\nE     + -  -----------\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '-  ---------...  -----...\n1 failed in 0.27s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    assert result == expected\nE   AssertionError: assert '-  --------\\...\\n-  --------' == 'a  3,456.32\\nb    982.65'\nE     \nE     + -  --------\nE       a  3,456.32\nE     - b    982.65\nE     + b    982.65\nE     ?            +\nE     + -  --------\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '-  --------\\...\\n-  --...\n1 failed in 0.26s\n"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "bug": "G160",
+  "issue": "https://github.com/falconry/falcon/issues/2585",
+  "error_to_find": "Timeout",
+  "files_picked": [
+    "falcon/testing/client.py",
+    "falcon/asgi/ws.py",
+    "falcon/asgi/app.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 256,
+  "tries": [
+    {
+      "guess": "When a WebSocket channel does not receive or send messages for a while, wait_ready hangs because the ready waiter future is never completed or cancelled when the task exits or times out.",
+      "test_code": "import asyncio\nimport falcon.asgi\nimport falcon.testing\n\nclass Channel:\n    async def on_websocket(self, req, ws):\n        await ws.accept()\n        while True:\n            await asyncio.sleep(1)\n\n@falcon.runs_sync\nasync def test_bug():\n    async with falcon.testing.ASGIConductor(falcon.asgi.App()) as ac:\n        ac.app.add_route('/', Channel())\n        async with ac.websocket('/') as ws:\n            await ws.wait_ready(timeout=0.2)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\nfalcon/util/sync.py:286: in invoke\n    return async_to_sync(coroutine, *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nfalcon/util/sync.py:260: in async_to_sync\n    return _active_runner().run(coroutine(*args, **kwargs))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/base_events.py:678: in run_until_complete\n    self.run_forever()\n/usr/local/lib/python3.12/asyncio/base_events.py:645: in run_forever\n    self._run_once()\n/usr/local/lib/python3.12/asyncio/base_events.py:1961: in _run_once\n    event_list = self._selector.select(timeout)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/selectors.py:468: in select\n    fd_event_list = self._selector.poll(timeout, max_ev)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: Timeout (>20.0s) from pytest-timeout.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.\n1 failed in 25.10s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\nfalcon/util/sync.py:286: in invoke\n    return async_to_sync(coroutine, *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nfalcon/util/sync.py:260: in async_to_sync\n    return _active_runner().run(coroutine(*args, **kwargs))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/runners.py:118: in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/asyncio/base_events.py:678: in run_until_complete\n    self.run_forever()\n/usr/local/lib/python3.12/asyncio/base_events.py:645: in run_forever\n    self._run_once()\n/usr/local/lib/python3.12/asyncio/base_events.py:1961: in _run_once\n    event_list = self._selector.select(timeout)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/usr/local/lib/python3.12/selectors.py:468: in select\n    fd_event_list = self._selector.poll(timeout, max_ev)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   Failed: Timeout (>20.0s) from pytest-timeout.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - Failed: Timeout (>20.0s) from pytest-timeout.\n1 failed in 23.55s\n"
+    }
+  ]
+}

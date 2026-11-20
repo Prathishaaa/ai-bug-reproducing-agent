@@ -1,0 +1,24 @@
+{
+  "bug": "G88",
+  "issue": "https://github.com/jd/tenacity/issues/519",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "tenacity/__init__.py",
+    "tenacity/retry.py",
+    "tenacity/asyncio/__init__.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": false,
+  "error_changes": [],
+  "seconds": 58,
+  "tries": [
+    {
+      "guess": "When multiple decorators wrap a function, an outer decorator like @timed overwrites or binds statistics on the wrapper rather than pointing to the inner retry's statistics object.",
+      "test_code": "import functools\nfrom tenacity import retry, stop_after_attempt\n\ndef timed():\n    def decorator(fn):\n        @functools.wraps(fn)\n        def wrapper(*args, **kwargs):\n            return fn(*args, **kwargs)\n        wrapper.statistics = {}\n        return wrapper\n    return decorator\n\ndef test_bug():\n    @timed()\n    @retry(stop=stop_after_attempt(3))\n    def my_call():\n        return \"success\"\n\n    my_call()\n    assert \"attempt_number\" in my_call.statistics\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:20: in test_bug\n    assert \"attempt_number\" in my_call.statistics\nE   AssertionError: assert 'attempt_number' in {}\nE    +  where {} = <function test_bug.<locals>.my_call at 0x7aa331b4ca40>.statistics\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'attempt_number' in {}\n1 failed in 0.71s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:20: in test_bug\n    assert \"attempt_number\" in my_call.statistics\nE   AssertionError: assert 'attempt_number' in {}\nE    +  where {} = <function test_bug.<locals>.my_call at 0x792821014ae0>.statistics\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert 'attempt_number' in {}\n1 failed in 0.57s\n"
+    }
+  ]
+}

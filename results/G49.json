@@ -1,0 +1,24 @@
+{
+  "bug": "G49",
+  "issue": "https://github.com/Python-Markdown/markdown/issues/1700",
+  "error_to_find": "RecursionError",
+  "files_picked": [
+    "markdown/test_tools.py",
+    "markdown/blockprocessors.py",
+    "markdown/inlinepatterns.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 82,
+  "tries": [
+    {
+      "guess": "The DefListProcessor lacks a recursion limit check in its test method, causing a RecursionError on deeply nested flat definition lists.",
+      "test_code": "import markdown\nfrom markdown.extensions.def_list import DefListExtension\n\ndef test_bug():\n    text = 'term\\n: definition\\n' * 600\n    markdown.markdown(text, extensions=['def_list'])\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    markdown.markdown(text, extensions=['def_list'])\nmarkdown/core.py:509: in markdown\n    return md.convert(text)\n           ^^^^^^^^^^^^^^^^\nmarkdown/core.py:370: in convert\n    root = self.parser.parseDocument(self.lines).getroot()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/blockparser.py:117: in parseDocument\n    self.parseChunk(self.root, '\\n'.join(lines))\nmarkdown/blockparser.py:136: in parseChunk\n    self.parseBlocks(parent, text.split('\\n\\n'))\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:158: in parseBlocks\n    if processor.run(parent, blocks) is not False:\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/def_list.py:86: in run\n    self.parser.parseBlocks(dd, [d])\nmarkdown/blockparser.py:156: in parseBlocks\n    for processor in self.blockprocessors:\n                     ^^^^^^^^^^^^^^^^^^^^\nE   RecursionError: maximum recursion depth exceeded\n!!! Recursion error detected, but the origin of the recursion could not be located.\n  Displaying first and last 10 stack frames out of 970.\n  Pass `--full-trace` to see all frames.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - RecursionError: maximum recursion depth exceeded\n1 failed in 4.23s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.64s\n"
+    }
+  ]
+}

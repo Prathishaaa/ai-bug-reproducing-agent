@@ -1,0 +1,44 @@
+{
+  "bug": "G113",
+  "issue": "https://github.com/pallets/werkzeug/issues/3121",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/werkzeug/routing/rules.py",
+    "src/werkzeug/routing/matcher.py",
+    "src/werkzeug/routing/map.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 145,
+  "tries": [
+    {
+      "guess": "Rule.compile and StateMachineMatcher use the non-greedy regex `/{2,}?` to merge slashes instead of the greedy `/{2,}`, which fails to merge 3 or more consecutive slashes correctly.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule\n\ndef test_bug():\n    m = Map([\n        Rule('/foo', endpoint='foo'),\n    ], merge_slashes=True)\n    adapter = m.bind('example.com', '/')\n    # When matching a path with triple slashes, it should normalize and redirect\n    endpoint, args = adapter.match('/path///to///foo')\n    assert endpoint == 'foo'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    endpoint, args = adapter.match('/path///to///foo')\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/werkzeug/routing/map.py:629: in match\n    raise NotFound() from None\nE   werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - werkzeug.exceptions.NotFound: 404 Not Found: T...\n1 failed in 5.24s\n",
+      "match": false,
+      "reason": "It failed with werkzeug, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "When merge_slashes is enabled, matching a path with three or more consecutive slashes uses `/{2,}?`, which only merges two slashes and leaves the rest unmerged, causing a 404 NotFound error instead of successfully redirecting to the normalized path.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule, RequestRedirect\n\ndef test_bug():\n    url_map = Map([\n        Rule('/path/to/foo', endpoint='foo')\n    ], merge_slashes=True)\n    adapter = url_map.bind('example.com', '/')\n    with pytest.raises(RequestRedirect) as exc_info:\n        adapter.match('/path///to///foo')\n    assert exc_info.value.new_url == 'http://example.com/path/to/foo'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    adapter.match('/path///to///foo')\nsrc/werkzeug/routing/map.py:629: in match\n    raise NotFound() from None\nE   werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - werkzeug.exceptions.NotFound: 404 Not Found: T...\n1 failed in 3.59s\n",
+      "match": false,
+      "reason": "It failed with werkzeug, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "Using the non-greedy regex `/{2,}?` instead of the greedy `/{2,}` for merging slashes prevents matching more than two consecutive slashes, causing path matching with three or more slashes to fail.",
+      "test_code": "import pytest\nfrom werkzeug.routing import Map, Rule\n\ndef test_bug():\n    m = Map([\n        Rule('/path/to/foo', endpoint='foo')\n    ], merge_slashes=True)\n    adapter = m.bind('example.com', '/')\n    endpoint, args = adapter.match('/path///to///foo')\n    assert endpoint == 'foo'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:9: in test_bug\n    endpoint, args = adapter.match('/path///to///foo')\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/werkzeug/routing/map.py:629: in match\n    raise NotFound() from None\nE   werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - werkzeug.exceptions.NotFound: 404 Not Found: T...\n1 failed in 3.13s\n",
+      "match": false,
+      "reason": "It failed with werkzeug, but the bug is AssertionError. Look for a different cause."
+    },
+    {
+      "guess": "Using the non-greedy quantifier `/{2,}?` instead of the greedy `/{2,}` for merging slashes prevents merging 3 or more consecutive slashes properly, causing request path normalization and matching to fail.",
+      "test_code": "import werkzeug.routing\n\ndef test_bug():\n    m = werkzeug.routing.Map([\n        werkzeug.routing.Rule('/path/to/foo', endpoint='foo')\n    ], merge_slashes=True)\n    adapter = m.bind('example.com', '/')\n    endpoint, args = adapter.match('/path///to///foo')\n    assert endpoint == 'foo'\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:8: in test_bug\n    endpoint, args = adapter.match('/path///to///foo')\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/werkzeug/routing/map.py:629: in match\n    raise NotFound() from None\nE   werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - werkzeug.exceptions.NotFound: 404 Not Found: T...\n1 failed in 3.50s\n",
+      "match": false,
+      "reason": "It failed with werkzeug, but the bug is AssertionError. Look for a different cause."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "bug": "G1",
+  "issue": "https://github.com/python-humanize/humanize/issues/205",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "src/humanize/filesize.py",
+    "src/humanize/__init__.py"
+  ],
+  "status": "not reproduced",
+  "verified_with_fix": null,
+  "error_changes": [],
+  "seconds": 59,
+  "tries": [
+    {
+      "guess": "Floating-point precision issues in math.log cause values near 10**24 to incorrectly select the ZB suffix instead of rolling over to YB.",
+      "test_code": "from humanize import filesize\n\n\ndef test_bug():\n    assert filesize.naturalsize(1_000_000_000_000_000_000_000_000) == '1.0 YB'\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.44s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Floating-point precision issues in math.log cause values around 10**24 (one septillion, the ZB to YB boundary) to be evaluated with an exponent that produces '1000.0 ZB' instead of rolling over to '1.0 YB'.",
+      "test_code": "from humanize import filesize\n\n\ndef test_bug():\n    # 1 followed by 24 zeros is 1 YB (10**24 in decimal scale), but naturalsize returns '1000.0 ZB'\n    val = 1_000_000_000_000_000_000_000_000\n    assert filesize.naturalsize(val) == \"1.0 YB\"\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.42s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Floating-point precision in math.log causes 10**24 (1 YB) to return '1000.0 ZB' instead of '1.0 YB'.",
+      "test_code": "from humanize import filesize\n\ndef test_bug():\n    assert filesize.naturalsize(10**24) == '1.0 YB'\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.27s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    },
+    {
+      "guess": "Floating-point precision issues with math.log cause values around 10**24 (one septillion, the ZB to YB boundary) to calculate an exponent that results in '1000.0 ZB' instead of rolling over to '1.0 YB'.",
+      "test_code": "from humanize import filesize\n\ndef test_bug():\n    assert filesize.naturalsize(1_000_000_000_000_000_000_000_000) == '1.0 YB'\n",
+      "output": ".                                                                        [100%]\n1 passed in 0.33s\n",
+      "match": false,
+      "reason": "Your test PASSED, so the bug did NOT happen. Try a different input or a different idea."
+    }
+  ]
+}

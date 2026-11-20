@@ -1,0 +1,24 @@
+{
+  "bug": "G48",
+  "issue": "https://github.com/Python-Markdown/markdown/issues/1705",
+  "error_to_find": "TypeError",
+  "files_picked": [
+    "markdown/extensions/toc.py",
+    "markdown/inlinepatterns.py",
+    "markdown/treeprocessors.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 89,
+  "tries": [
+    {
+      "guess": "The toc extension attempts to unescape or read element attribute values like 'id' without checking if they are None (valueless attributes set by attr_list), causing a TypeError.",
+      "test_code": "import markdown\nfrom markdown.extensions import attr_list, toc\n\ndef test_bug():\n    markdown.markdown(\n        \"#d {id}\",\n        extensions=[attr_list.AttrListExtension(), toc.TocExtension()],\n    )\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:5: in test_bug\n    markdown.markdown(\nmarkdown/core.py:509: in markdown\n    return md.convert(text)\n           ^^^^^^^^^^^^^^^^\nmarkdown/core.py:374: in convert\n    newRoot = treeprocessor.run(root)\n              ^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/toc.py:417: in run\n    'id': unescape(el.attrib[\"id\"]),\n          ^^^^^^^^^^^^^^^^^^^^^^^^^\nmarkdown/extensions/toc.py:124: in unescape\n    return c.unescape(text)\n           ^^^^^^^^^^^^^^^^\nmarkdown/treeprocessors.py:470: in unescape\n    return self.RE.sub(self._unescape, text)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   TypeError: expected string or bytes-like object, got 'NoneType'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - TypeError: expected string or bytes-like objec...\n1 failed in 1.07s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.61s\n"
+    }
+  ]
+}

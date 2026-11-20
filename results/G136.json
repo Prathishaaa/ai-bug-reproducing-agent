@@ -1,0 +1,24 @@
+{
+  "bug": "G136",
+  "issue": "https://github.com/andialbrecht/sqlparse/issues/763",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "sqlparse/keywords.py",
+    "sqlparse/engine/grouping.py",
+    "sqlparse/filters/reindent.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 48,
+  "tries": [
+    {
+      "guess": "Dollar quoted strings following an operator are not correctly recognized because the negative lookbehind in the regex strictly requires non-whitespace, rejecting operators.",
+      "test_code": "import sqlparse\n\ndef test_bug():\n    sql = \"update test set a=$$test;test$$;\"\n    res = sqlparse.split(sql)\n    assert res == [\"update test set a=$$test;test$$;\"]\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:6: in test_bug\n    assert res == [\"update test set a=$$test;test$$;\"]\nE   AssertionError: assert ['update test...;', 'test$$;'] == ['update test...test;test$$;']\nE     \nE     At index 0 diff: 'update test set a=$$test;' != 'update test set a=$$test;test$$;'\nE     Left contains one more item: 'test$$;'\nE     Use -v to get more diff\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert ['update test...;', 'te...\n1 failed in 1.85s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.97s\n"
+    }
+  ]
+}

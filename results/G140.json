@@ -1,0 +1,24 @@
+{
+  "bug": "G140",
+  "issue": "https://github.com/pallets-eco/flask-sqlalchemy/issues/1295",
+  "error_to_find": "KeyError",
+  "files_picked": [
+    "src/flask_sqlalchemy/extension.py",
+    "examples/flaskr/flaskr/__init__.py",
+    "src/flask_sqlalchemy/model.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 142,
+  "tries": [
+    {
+      "guess": "Calling `repr()` on the SQLAlchemy instance when no default engine is set (e.g. only binds are configured) raises a KeyError because it attempts to access `self.engine` which looks up `self.engines[None]`, but `None` is not in `self.engines` (only the bind keys are).",
+      "test_code": "from flask import Flask\nfrom flask_sqlalchemy import SQLAlchemy\n\ndef test_bug():\n    db = SQLAlchemy()\n    app = Flask(__name__)\n    app.config['SQLALCHEMY_BINDS'] = {'x': 'sqlite:///:memory:'}\n    db.init_app(app)\n    with app.app_context():\n        repr(db)\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:10: in test_bug\n    repr(db)\nsrc/flask_sqlalchemy/extension.py:284: in __repr__\n    message = f\"{type(self).__name__} {self.engine.url}\"\n                                       ^^^^^^^^^^^\nsrc/flask_sqlalchemy/extension.py:709: in engine\n    return self.engines[None]\n           ^^^^^^^^^^^^^^^^^^\nE   KeyError: None\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - KeyError: None\n1 failed in 3.49s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 2.49s\n"
+    }
+  ]
+}

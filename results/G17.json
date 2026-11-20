@@ -1,0 +1,24 @@
+{
+  "bug": "G17",
+  "issue": "https://github.com/astanin/python-tabulate/issues/305",
+  "error_to_find": "AttributeError",
+  "files_picked": [
+    "test/test_output.py",
+    "tabulate/__init__.py",
+    "test/test_regression.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 36,
+  "tries": [
+    {
+      "guess": "_wrap_text_to_colwidths casts string representations of booleans into actual booleans using _type, causing textwrap to fail because it expects strings.",
+      "test_code": "import tabulate\n\ndef test_bug():\n    tabulate.tabulate([['init', 'True']], maxcolwidths=[None, 42])\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:4: in test_bug\n    tabulate.tabulate([['init', 'True']], maxcolwidths=[None, 42])\ntabulate/__init__.py:2255: in tabulate\n    list_of_lists = _wrap_text_to_colwidths(\ntabulate/__init__.py:1659: in _wrap_text_to_colwidths\n    for line in casted_cell.splitlines()\n                ^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'bool' object has no attribute 'splitlines'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AttributeError: 'bool' object has no attribute...\n1 failed in 0.67s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.26s\n"
+    }
+  ]
+}

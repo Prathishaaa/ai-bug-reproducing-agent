@@ -1,0 +1,24 @@
+{
+  "bug": "G54",
+  "issue": "https://github.com/Python-Markdown/markdown/issues/1668",
+  "error_to_find": "AssertionError",
+  "files_picked": [
+    "markdown/core.py",
+    "markdown/inlinepatterns.py",
+    "markdown/extensions/codehilite.py"
+  ],
+  "status": "reproduced",
+  "verified_with_fix": true,
+  "error_changes": [],
+  "seconds": 70,
+  "tries": [
+    {
+      "guess": "Unmatched backticks of unequal length cause subsequent text to be incorrectly consumed and dropped due to incorrect span length calculations in BacktickInlineProcessor.",
+      "test_code": "import markdown\n\n\ndef test_bug():\n    text = \"a ``` b ````` c\"\n    result = markdown.markdown(text)\n    assert '`' in result\n    assert 'b' in result\n",
+      "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n___________________________________ test_bug ___________________________________\ntest_bug.py:7: in test_bug\n    assert '`' in result\nE   AssertionError: assert '`' in '<p>a <code></code> c</p>'\n=========================== short test summary info ============================\nFAILED test_bug.py::test_bug - AssertionError: assert '`' in '<p>a <code></co...\n1 failed in 0.56s\n",
+      "match": true,
+      "reason": "",
+      "output_after_fix": ".                                                                        [100%]\n1 passed in 0.39s\n"
+    }
+  ]
+}
